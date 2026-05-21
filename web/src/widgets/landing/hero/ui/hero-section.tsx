@@ -45,7 +45,7 @@ export function HeroSection() {
             </Link>
           </Button>
           <Button size="lg" variant="outline" className="bg-white/80" asChild>
-            <a href="#how-it-works">Як це працює</a>
+            <Link href="/join">Увійти за PIN</Link>
           </Button>
         </div>
 

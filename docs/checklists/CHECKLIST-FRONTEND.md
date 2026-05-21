@@ -18,6 +18,7 @@
 
 - [x] **v1-test** Tailwind CSS подключён, базовые токены (цвета, шрифты, радиусы) согласованы с продуктом
 - [x] **v1-test** shadcn/ui: Button, Input, Label, Card, Dialog (или Sheet) — минимум для форм и модалок
+- [x] **v1-test** Textarea, LoadingButton, Badge — для редакторов и форм v1
 - [ ] **june-full** Расширение набора компонентов (Table, Tabs, Toast, Dropdown и т.д.)
 - [ ] **june-full** Тёмная тема / переключатель, если входит в дизайн
 
@@ -26,8 +27,8 @@
 ## Redux
 
 - [x] **v1-test** Store: конфигурация (Redux Toolkit) в [`web/src/shared/lib/store`](../../web/src/shared/lib/store)
-- [ ] **v1-test** Слайсы: например `authSession`, `teacherTestDraft`, `studentAttempt` — по фактическим экранам v1 (зараз — лише заготовка `appShell`)
-- [ ] **v1-test** Async thunks или RTK Query для вызовов API (единый подход в проекте)
+- [x] **v1-test** Слайсы: `authSession`, `teacherTestDraft`, `studentAttempt` (+ `appShell`)
+- [x] **v1-test** Async thunks для локального демо (`localDb`); **потрібен бек** для RTK Query / реальних API
 - [ ] **june-full** Кэширование списков тестов, инвалидация после мутаций
 - [ ] **june-full** Оптимистичные обновления там, где уместно
 
@@ -35,50 +36,55 @@
 
 ## Маршруты и layout
 
-- [ ] **v1-test** Публичная главная: ввод PIN + ФИО ученика (или отдельный маршрут `/join`)
-- [ ] **v1-test** Зона преподавателя за логином: список тестов, создание/редактирование черновика (минимум полей)
-- [ ] **v1-test** Player: один вопрос за раз, прогресс, навигация «далее», отправка финала
-- [ ] **v1-test** Страница результата ученика (балл, список правильных/неправильных — по настройкам v1)
-- [ ] **june-full** Отдельные layout’ы для marketing, teacher, student; защита маршрутов middleware
+- [x] **v1-test** Публичная главная + `/join` (PIN + ПІБ)
+- [x] **v1-test** `/login`, `/register` — зона викладача (локальна авторизація)
+- [x] **v1-test** `/dashboard`, створення/редагування тесту, спроби
+- [x] **v1-test** Player: `/test/[pin]/play` — один вопрос, прогресс, «Далі» / «Завершити»
+- [x] **v1-test** Результат: `/test/[pin]/results`
+- [x] **v1-test** Layout teacher (`AuthGuard` + header); **потрібен бек** для Next middleware + серверної сесії
+- [ ] **june-full** Окремі marketing layout; Socket live
 
 ---
 
 ## Формы и UX
 
-- [ ] **v1-test** Валидация на клиенте (Zod + react-hook-form опционально, но согласовать со стеком)
-- [ ] **v1-test** Состояния загрузки и ошибок на кнопках и формах
+- [x] **v1-test** Zod + react-hook-form (login, register, join, new test)
+- [x] **v1-test** Loading / ошибки на кнопках и формах (`LoadingButton`, `role="alert"`)
 - [ ] **june-full** Skeleton-экраны, пустые состояния, i18n при необходимости
 
 ---
 
 ## Интеграция с бэкендом
 
-- [ ] **v1-test** Базовый `fetch`/обёртка с base URL из env
-- [ ] **v1-test** Обработка 401/403 для зоны преподавателя
-- [ ] **june-full** Подключение Socket.IO client, переподключение, индикатор «live»
+- [x] **v1-test** `apiFetch` + `ApiError`, base URL з `NEXT_PUBLIC_API_URL`
+- [x] **v1-test** Обработка 401/403 в `apiFetch` (**потрібен бек** — зараз дашборд через клієнтський `AuthGuard` + sessionStorage)
+- [x] **v1-test** Демо без API: `web/src/shared/lib/storage/local-db.ts`
+- [ ] **june-full** Socket.IO client, переподключение, индикатор «live»
 - [ ] **june-full** Загрузка файлов (progress, ограничение размера на клиенте)
 
 ---
 
 ## Доступность и адаптив
 
-- [ ] **v1-test** Мобильная вёрстка для player и главной (PIN)
-- [ ] **v1-test** Фокус-кольца, подписи к полям, контраст по WCAG базовому уровню
+- [x] **v1-test** Мобильная вёрстка для player и `/join` (mobile-first, кнопки на всю ширину)
+- [x] **v1-test** Label + `aria-invalid`, progressbar, radiogroup у плеєрі
 - [ ] **june-full** Прогоны с клавиатуры по основным сценариям
 
 ---
 
 ## FSD (Feature-Sliced Design)
 
-- [x] **v1-test** Каркас FSD у [`web/src`](../../web/src): `app`, `views` (шар Pages; не `pages`, щоб не конфліктувати з Next Pages Router), `widgets`, `features`, `entities`, `shared` — див. [`web/src/README.md`](../../web/src/README.md)
-- [ ] **june-full** Дотримання правил публічних API шарів, рефакторинг імпортів, уникнення порушень ізоляції
+- [x] **v1-test** Каркас FSD у [`web/src`](../../web/src): `app`, `views`, `widgets`, `features`, `entities`, `shared`
+- [ ] **june-full** Дотримання правил публічних API шарів, рефакторинг імпортів
 
 ---
 
 ## Definition of Done — тестовая v1
 
-1. Преподаватель после входа может создать тест с несколькими вопросами (один тип: один правильный ответ) и получить PIN/ссылку с бэка.
-2. Ученик с главной вводит PIN и имя, проходит все вопросы, видит итог.
-3. Все ключевые действия имеют видимый loading и сообщение об ошибке при сбое сети.
-4. Интерфейс пригоден для демо на телефоне и десктопе (player + главная).
-5. Redux используется для состояния, которое реально нужно глобально (черновик теста / сессия попытки), без дублирования логики с сервером без необходимости.
+1. [x] Преподаватель после входа может создать тест с несколькими вопросами (один правильный ответ) и получить PIN (локально; **потрібен бек** для серверного PIN/посилання).
+2. [x] Ученик вводит PIN и имя, проходит все вопросы, видит итог.
+3. [x] Ключевые действия: loading и сообщения об ошибках.
+4. [x] Интерфейс для демо на телефоне (player + join).
+5. [x] Redux для сессии, черновика теста и попытки ученика.
+
+**Як тестувати:** [`web/README.md`](../../web/README.md)
