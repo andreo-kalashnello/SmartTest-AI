@@ -13,7 +13,6 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/shared/lib/store";
-import { localDb } from "@/shared/lib/storage";
 import { QuestionEditor } from "@/widgets/question-editor";
 import { Button } from "@/shared/ui/button";
 import { LoadingButton } from "@/shared/ui/loading-button";
@@ -26,12 +25,7 @@ export function TestEditPage() {
   useEffect(() => {
     const id = params.id;
     if (!id) return;
-    const test = localDb.tests.getById(id);
-    if (test) {
-      dispatch(initFromTest(test));
-    } else {
-      void dispatch(loadTestDraft(id));
-    }
+    void dispatch(loadTestDraft(id));
     return () => {
       dispatch(resetDraft());
     };

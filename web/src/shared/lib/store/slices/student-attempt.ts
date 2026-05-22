@@ -1,11 +1,11 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { QuestionId, Test, TestAttempt } from "@/entities/test";
-import { localDb } from "@/shared/lib/storage";
 
 type AttemptPhase = "idle" | "joining" | "playing" | "submitting" | "done";
 
 interface StudentAttemptState {
+  attemptId: string | null;
   pin: string;
   studentName: string;
   test: Test | null;
@@ -16,7 +16,19 @@ interface StudentAttemptState {
   result: TestAttempt | null;
 }
 
+type PlayerTest = Omit<Test, "questions"> & {
+  questions: Array<{
+    id: string;
+    prompt: string;
+    options: Array<{
+      id: string;
+      text: string;
+    }>;
+  }>;
+};
+
 const initialState: StudentAttemptState = {
+  attemptId: null,
   pin: "",
   studentName: "",
   test: null,
@@ -27,19 +39,63 @@ const initialState: StudentAttemptState = {
   result: null,
 };
 
+function normalizePlayerTest(test: PlayerTest): Test {
+  return {
+    ...test,
+    questions: test.questions.map((question) => ({
+      ...question,
+      options: question.options.map((option) => ({
+        ...option,
+        isCorrect: false,
+      })),
+    })),
+  };
+}
+
+async function readErrorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
+  try {
+    const body = (await response.json()) as { message?: string };
+    return body.message ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export const joinTestByPin = createAsyncThunk(
   "studentAttempt/join",
   async (
     data: { pin: string; studentName: string },
     { rejectWithValue },
   ) => {
-    localDb.seedDemoIfEmpty();
-    const test = localDb.tests.getByPin(data.pin.trim());
-    if (!test) return rejectWithValue("Тест з таким PIN не знайдено");
-    if (test.questions.length === 0) {
-      return rejectWithValue("У тесті ще немає питань");
+    const response = await fetch("/api/public/attempts/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pin: data.pin.trim(),
+        studentName: data.studentName.trim(),
+      }),
+    });
+
+    if (!response.ok) {
+      return rejectWithValue(
+        await readErrorMessage(response, "Test with this PIN was not found"),
+      );
     }
-    return { test, studentName: data.studentName.trim(), pin: data.pin.trim() };
+
+    const body = (await response.json()) as {
+      attemptId: string;
+      test: PlayerTest;
+    };
+
+    return {
+      attemptId: body.attemptId,
+      test: normalizePlayerTest(body.test),
+      studentName: data.studentName.trim(),
+      pin: data.pin.trim(),
+    };
   },
 );
 
@@ -49,25 +105,44 @@ export const submitAttempt = createAsyncThunk(
     const { studentAttempt } = getState() as {
       studentAttempt: StudentAttemptState;
     };
-    const { test, studentName, answers } = studentAttempt;
-    if (!test || !studentName) {
-      return rejectWithValue("Спроба не ініціалізована");
+    const { attemptId, test, answers } = studentAttempt;
+
+    if (!attemptId || !test) {
+      return rejectWithValue("Attempt is not initialized");
     }
-    let score = 0;
-    for (const q of test.questions) {
-      const selected = answers[q.id];
-      const correct = q.options.find((o) => o.isCorrect);
-      if (correct && selected === correct.id) score += 1;
-    }
-    const attempt = localDb.attempts.save({
-      testId: test.id,
-      studentName,
-      answers,
-      score,
-      total: test.questions.length,
-      completedAt: new Date().toISOString(),
+
+    const answerItems = Object.entries(answers).map(([questionId, optionId]) => ({
+      questionId,
+      optionId,
+    }));
+
+    const saveResponse = await fetch(`/api/public/attempts/${attemptId}/answers`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers: answerItems }),
     });
-    return attempt;
+
+    if (!saveResponse.ok) {
+      return rejectWithValue(
+        await readErrorMessage(saveResponse, "Answer save failed"),
+      );
+    }
+
+    const completeResponse = await fetch(
+      `/api/public/attempts/${attemptId}/complete`,
+      {
+        method: "POST",
+      },
+    );
+
+    if (!completeResponse.ok) {
+      return rejectWithValue(
+        await readErrorMessage(completeResponse, "Attempt submit failed"),
+      );
+    }
+
+    const body = (await completeResponse.json()) as { result: TestAttempt };
+    return body.result;
   },
 );
 
@@ -104,6 +179,7 @@ export const studentAttemptSlice = createSlice({
         state.error = null;
       })
       .addCase(joinTestByPin.fulfilled, (state, action) => {
+        state.attemptId = action.payload.attemptId;
         state.pin = action.payload.pin;
         state.studentName = action.payload.studentName;
         state.test = action.payload.test;
@@ -114,7 +190,7 @@ export const studentAttemptSlice = createSlice({
       })
       .addCase(joinTestByPin.rejected, (state, action) => {
         state.phase = "idle";
-        state.error = (action.payload as string) ?? "Помилка";
+        state.error = (action.payload as string) ?? "Join failed";
       })
       .addCase(submitAttempt.pending, (state) => {
         state.phase = "submitting";
@@ -126,7 +202,7 @@ export const studentAttemptSlice = createSlice({
       })
       .addCase(submitAttempt.rejected, (state, action) => {
         state.phase = "playing";
-        state.error = (action.payload as string) ?? "Помилка відправки";
+        state.error = (action.payload as string) ?? "Submit failed";
       });
   },
 });

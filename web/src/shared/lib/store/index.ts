@@ -9,6 +9,7 @@ export {
   hydrateAuth,
   loginTeacher,
   logout,
+  logoutTeacher,
   registerTeacher,
   setSession,
 } from "./slices/auth-session";

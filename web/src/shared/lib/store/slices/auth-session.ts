@@ -1,9 +1,6 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { AuthSession } from "@/entities/auth";
-import { localDb } from "@/shared/lib/storage";
-
-const SESSION_KEY = "smarttest_session";
 
 type AuthStatus = "idle" | "loading" | "succeeded" | "failed";
 
@@ -14,6 +11,12 @@ interface AuthSessionState {
   hydrated: boolean;
 }
 
+type AuthApiUser = {
+  id: string;
+  email: string;
+  name: string;
+};
+
 const initialState: AuthSessionState = {
   user: null,
   status: "idle",
@@ -21,24 +24,42 @@ const initialState: AuthSessionState = {
   hydrated: false,
 };
 
-function persistSession(user: AuthSession | null): void {
-  if (typeof window === "undefined") return;
-  if (user) sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  else sessionStorage.removeItem(SESSION_KEY);
+function toSession(user: AuthApiUser): AuthSession {
+  return {
+    userId: user.id,
+    email: user.email,
+    name: user.name,
+  };
 }
 
-function readSession(): AuthSession | null {
-  if (typeof window === "undefined") return null;
+async function readErrorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as AuthSession) : null;
+    const body = (await response.json()) as { message?: string };
+    return body.message ?? fallback;
   } catch {
-    return null;
+    return fallback;
   }
 }
 
 export const hydrateAuth = createAsyncThunk("authSession/hydrate", async () => {
-  return readSession();
+  const response = await fetch("/api/auth/me", {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (response.status === 401) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Session check failed"));
+  }
+
+  const body = (await response.json()) as { user: AuthApiUser };
+  return toSession(body.user);
 });
 
 export const registerTeacher = createAsyncThunk(
@@ -48,16 +69,25 @@ export const registerTeacher = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const user = localDb.auth.register(data);
-      const session: AuthSession = {
-        userId: user.id,
-        email: user.email,
-        name: user.name,
-      };
-      persistSession(session);
-      return session;
-    } catch (e) {
-      return rejectWithValue(e instanceof Error ? e.message : "Помилка реєстрації");
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        return rejectWithValue(
+          await readErrorMessage(response, "Registration failed"),
+        );
+      }
+
+      const body = (await response.json()) as { user: AuthApiUser };
+      return toSession(body.user);
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Registration failed",
+      );
     }
   },
 );
@@ -69,19 +99,33 @@ export const loginTeacher = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const user = localDb.auth.login(data.email, data.password);
-      const session: AuthSession = {
-        userId: user.id,
-        email: user.email,
-        name: user.name,
-      };
-      persistSession(session);
-      return session;
-    } catch (e) {
-      return rejectWithValue(e instanceof Error ? e.message : "Помилка входу");
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        return rejectWithValue(await readErrorMessage(response, "Login failed"));
+      }
+
+      const body = (await response.json()) as { user: AuthApiUser };
+      return toSession(body.user);
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Login failed",
+      );
     }
   },
 );
+
+export const logoutTeacher = createAsyncThunk("authSession/logout", async () => {
+  await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
+  });
+});
 
 export const authSessionSlice = createSlice({
   name: "authSession",
@@ -91,7 +135,6 @@ export const authSessionSlice = createSlice({
       state.user = null;
       state.status = "idle";
       state.error = null;
-      persistSession(null);
     },
     clearAuthError(state) {
       state.error = null;
@@ -99,7 +142,6 @@ export const authSessionSlice = createSlice({
     },
     setSession(state, action: PayloadAction<AuthSession | null>) {
       state.user = action.payload;
-      persistSession(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -109,6 +151,7 @@ export const authSessionSlice = createSlice({
         state.hydrated = true;
       })
       .addCase(hydrateAuth.rejected, (state) => {
+        state.user = null;
         state.hydrated = true;
       })
       .addCase(registerTeacher.pending, (state) => {
@@ -121,7 +164,7 @@ export const authSessionSlice = createSlice({
       })
       .addCase(registerTeacher.rejected, (state, action) => {
         state.status = "failed";
-        state.error = (action.payload as string) ?? "Помилка";
+        state.error = (action.payload as string) ?? "Registration failed";
       })
       .addCase(loginTeacher.pending, (state) => {
         state.status = "loading";
@@ -133,7 +176,12 @@ export const authSessionSlice = createSlice({
       })
       .addCase(loginTeacher.rejected, (state, action) => {
         state.status = "failed";
-        state.error = (action.payload as string) ?? "Помилка";
+        state.error = (action.payload as string) ?? "Login failed";
+      })
+      .addCase(logoutTeacher.fulfilled, (state) => {
+        state.user = null;
+        state.status = "idle";
+        state.error = null;
       });
   },
 });

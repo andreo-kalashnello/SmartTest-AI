@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ClipboardCopy, Pencil, Users } from "lucide-react";
 
 import type { Test } from "@/entities/test";
-import { localDb } from "@/shared/lib/storage";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -14,8 +13,28 @@ export function TeacherTestList() {
   const [tests, setTests] = useState<Test[]>([]);
 
   useEffect(() => {
-    localDb.seedDemoIfEmpty();
-    setTests(localDb.tests.list());
+    let alive = true;
+
+    async function loadTests() {
+      const response = await fetch("/api/tests", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        if (alive) setTests([]);
+        return;
+      }
+
+      const body = (await response.json()) as { tests: Test[] };
+      if (alive) setTests(body.tests);
+    }
+
+    void loadTests();
+
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const copyPin = async (pin: string) => {

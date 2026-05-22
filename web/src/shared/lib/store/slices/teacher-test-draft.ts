@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { Question, Test, TestId } from "@/entities/test";
-import { localDb } from "@/shared/lib/storage";
 
 type DraftStatus = "idle" | "loading" | "saving" | "succeeded" | "failed";
 
@@ -23,12 +22,34 @@ const initialState: TeacherTestDraftState = {
   error: null,
 };
 
+async function readErrorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
+  try {
+    const body = (await response.json()) as { message?: string };
+    return body.message ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export const loadTestDraft = createAsyncThunk(
   "teacherTestDraft/load",
   async (testId: TestId, { rejectWithValue }) => {
-    const test = localDb.tests.getById(testId);
-    if (!test) return rejectWithValue("Тест не знайдено");
-    return test;
+    const response = await fetch(`/api/tests/${testId}`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      return rejectWithValue(
+        await readErrorMessage(response, "Test not found"),
+      );
+    }
+
+    const body = (await response.json()) as { test: Test };
+    return body.test;
   },
 );
 
@@ -38,17 +59,27 @@ export const saveTestDraft = createAsyncThunk(
     const { teacherTestDraft } = getState() as {
       teacherTestDraft: TeacherTestDraftState;
     };
+
     if (!teacherTestDraft.testId) {
-      return rejectWithValue("Немає тесту для збереження");
+      return rejectWithValue("No test to save");
     }
-    const existing = localDb.tests.getById(teacherTestDraft.testId);
-    if (!existing) return rejectWithValue("Тест не знайдено");
-    const updated: Test = {
-      ...existing,
-      title: teacherTestDraft.title,
-      questions: teacherTestDraft.questions,
-    };
-    return localDb.tests.update(updated);
+
+    const response = await fetch(`/api/tests/${teacherTestDraft.testId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        title: teacherTestDraft.title,
+        questions: teacherTestDraft.questions,
+      }),
+    });
+
+    if (!response.ok) {
+      return rejectWithValue(await readErrorMessage(response, "Save failed"));
+    }
+
+    const body = (await response.json()) as { test: Test };
+    return body.test;
   },
 );
 
@@ -91,8 +122,10 @@ export const teacherTestDraftSlice = createSlice({
       state,
       action: PayloadAction<{ questionId: string; prompt: string }>,
     ) {
-      const q = state.questions.find((x) => x.id === action.payload.questionId);
-      if (q) q.prompt = action.payload.prompt;
+      const question = state.questions.find(
+        (item) => item.id === action.payload.questionId,
+      );
+      if (question) question.prompt = action.payload.prompt;
     },
     updateOptionText(
       state,
@@ -102,24 +135,30 @@ export const teacherTestDraftSlice = createSlice({
         text: string;
       }>,
     ) {
-      const q = state.questions.find((x) => x.id === action.payload.questionId);
-      const o = q?.options.find((x) => x.id === action.payload.optionId);
-      if (o) o.text = action.payload.text;
+      const question = state.questions.find(
+        (item) => item.id === action.payload.questionId,
+      );
+      const option = question?.options.find(
+        (item) => item.id === action.payload.optionId,
+      );
+      if (option) option.text = action.payload.text;
     },
     setCorrectOption(
       state,
       action: PayloadAction<{ questionId: string; optionId: string }>,
     ) {
-      const q = state.questions.find((x) => x.id === action.payload.questionId);
-      if (!q) return;
-      q.options.forEach((o) => {
-        o.isCorrect = o.id === action.payload.optionId;
+      const question = state.questions.find(
+        (item) => item.id === action.payload.questionId,
+      );
+      if (!question) return;
+      question.options.forEach((option) => {
+        option.isCorrect = option.id === action.payload.optionId;
       });
     },
     addOption(state, action: PayloadAction<string>) {
-      const q = state.questions.find((x) => x.id === action.payload);
-      if (!q) return;
-      q.options.push({
+      const question = state.questions.find((item) => item.id === action.payload);
+      if (!question) return;
+      question.options.push({
         id: `o-${Date.now()}`,
         text: "",
         isCorrect: false,
@@ -129,11 +168,17 @@ export const teacherTestDraftSlice = createSlice({
       state,
       action: PayloadAction<{ questionId: string; optionId: string }>,
     ) {
-      const q = state.questions.find((x) => x.id === action.payload.questionId);
-      if (!q || q.options.length <= 2) return;
-      q.options = q.options.filter((o) => o.id !== action.payload.optionId);
-      if (!q.options.some((o) => o.isCorrect) && q.options[0]) {
-        q.options[0].isCorrect = true;
+      const question = state.questions.find(
+        (item) => item.id === action.payload.questionId,
+      );
+      if (!question || question.options.length <= 2) return;
+
+      question.options = question.options.filter(
+        (option) => option.id !== action.payload.optionId,
+      );
+
+      if (!question.options.some((option) => option.isCorrect) && question.options[0]) {
+        question.options[0].isCorrect = true;
       }
     },
   },
@@ -152,7 +197,7 @@ export const teacherTestDraftSlice = createSlice({
       })
       .addCase(loadTestDraft.rejected, (state, action) => {
         state.status = "failed";
-        state.error = (action.payload as string) ?? "Помилка";
+        state.error = (action.payload as string) ?? "Load failed";
       })
       .addCase(saveTestDraft.pending, (state) => {
         state.status = "saving";
@@ -161,10 +206,12 @@ export const teacherTestDraftSlice = createSlice({
       .addCase(saveTestDraft.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.pin = action.payload.pin;
+        state.title = action.payload.title;
+        state.questions = action.payload.questions;
       })
       .addCase(saveTestDraft.rejected, (state, action) => {
         state.status = "failed";
-        state.error = (action.payload as string) ?? "Помилка збереження";
+        state.error = (action.payload as string) ?? "Save failed";
       });
   },
 });

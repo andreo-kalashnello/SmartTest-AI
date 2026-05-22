@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Brain, LogOut } from "lucide-react";
 
-import { logout, useAppDispatch, useAppSelector } from "@/shared/lib/store";
+import {
+  logout,
+  logoutTeacher,
+  useAppDispatch,
+  useAppSelector,
+} from "@/shared/lib/store";
 import { Button } from "@/shared/ui/button";
 
 export function TeacherHeader() {
@@ -12,7 +17,8 @@ export function TeacherHeader() {
   const router = useRouter();
   const user = useAppSelector((s) => s.authSession.user);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await dispatch(logoutTeacher());
     dispatch(logout());
     router.push("/login");
   };

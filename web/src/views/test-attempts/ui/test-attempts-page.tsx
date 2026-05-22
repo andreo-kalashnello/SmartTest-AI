@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import type { Test, TestAttempt } from "@/entities/test";
-import { localDb } from "@/shared/lib/storage";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
@@ -18,8 +17,39 @@ export function TestAttemptsPage() {
   useEffect(() => {
     const id = params.id;
     if (!id) return;
-    setTest(localDb.tests.getById(id) ?? null);
-    setAttempts(localDb.attempts.listByTest(id));
+
+    let alive = true;
+
+    async function loadAttempts() {
+      const response = await fetch(`/api/tests/${id}/attempts`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        if (alive) {
+          setTest(null);
+          setAttempts([]);
+        }
+        return;
+      }
+
+      const body = (await response.json()) as {
+        test: Test;
+        attempts: TestAttempt[];
+      };
+
+      if (alive) {
+        setTest(body.test);
+        setAttempts(body.attempts);
+      }
+    }
+
+    void loadAttempts();
+
+    return () => {
+      alive = false;
+    };
   }, [params.id]);
 
   if (!test) {
