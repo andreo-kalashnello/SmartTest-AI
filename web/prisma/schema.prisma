@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  tests        Test[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Test {
+  id        String        @id @default(cuid())
+  title     String
+  pin       String        @unique
+  teacherId String
+  teacher   User          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  questions Question[]
+  attempts  TestAttempt[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([teacherId])
+  @@index([pin])
+}
+
+model Question {
+  id        String           @id @default(cuid())
+  prompt    String
+  order     Int
+  testId    String
+  test      Test             @relation(fields: [testId], references: [id], onDelete: Cascade)
+  options   QuestionOption[]
+  answers   Answer[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([testId])
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  text       String
+  isCorrect  Boolean  @default(false)
+  order      Int
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers    Answer[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([questionId])
+}
+
+model TestAttempt {
+  id          String        @id @default(cuid())
+  testId      String
+  test        Test          @relation(fields: [testId], references: [id], onDelete: Cascade)
+  studentName String
+  status      AttemptStatus @default(IN_PROGRESS)
+  score       Int           @default(0)
+  total       Int           @default(0)
+  answers     Answer[]
+  startedAt   DateTime      @default(now())
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([testId])
+}
+
+model Answer {
+  id               String         @id @default(cuid())
+  attemptId        String
+  attempt          TestAttempt    @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptionId String
+  selectedOption   QuestionOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
+  isCorrect        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+  @@index([selectedOptionId])
+}

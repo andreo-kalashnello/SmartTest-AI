@@ -1,0 +1,18 @@
+services:
+    postgres:
+        image: postgres:16-alpine
+        environment:
+            POSTGRES_USER: smarttest
+            POSTGRES_PASSWORD: smarttest
+            POSTGRES_DB: smarttest
+        ports:
+            - '5433:5432'
+        volumes:
+            - smarttest_postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U smarttest -d smarttest']
+            interval: 5s
+            timeout: 5s
+            retries: 10
+volumes:
+    smarttest_postgres_data:
