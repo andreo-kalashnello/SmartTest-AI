@@ -31,4 +31,4 @@ if command -v pm2 >/dev/null; then
   pm2 save
 fi
 
-echo "Done. Open http://smarttest-ai.duckdns.org"
+echo "Done. Open http://smarttestai.duckdns.org"
