@@ -6,6 +6,13 @@ export const SESSION_COOKIE = "smarttest_session";
 
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
+/** Secure cookies only over HTTPS; HTTP deploy (e.g. DuckDNS without TLS) must not set Secure. */
+function cookieSecure(): boolean {
+  if (process.env.AUTH_COOKIE_SECURE === "true") return true;
+  if (process.env.AUTH_COOKIE_SECURE === "false") return false;
+  return (process.env.NEXT_PUBLIC_APP_URL ?? "").startsWith("https://");
+}
+
 function getSecret(): string {
   return process.env.AUTH_SECRET ?? process.env.JWT_SECRET ?? "dev-only-secret-change-me";
 }
@@ -66,7 +73,7 @@ export function setSessionCookie(response: NextResponse, userId: string): void {
     }),
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecure(),
     path: "/",
     maxAge: SESSION_TTL_SECONDS,
   });
@@ -78,7 +85,7 @@ export function clearSessionCookie(response: NextResponse): void {
     value: "",
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecure(),
     path: "/",
     maxAge: 0,
   });
