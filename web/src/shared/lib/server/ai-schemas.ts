@@ -1,16 +1,19 @@
 //src/shared/lib/server/ai-schemas.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 const generatedOptionSchema = z.object({
     text: z.string().trim().min(1).max(500),
     isCorrect: z.boolean(),
 });
 
+export const testLanguageSchema = z.enum(["auto", "uk", "en"]);
+
 export const generateQuestionsSchema = z.object({
     topic: z.string().trim().min(2).max(200),
     count: z.number().int().min(1).max(10),
-    difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
-    sourceText: z.string().trim().max(8000).optional(),
+    difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+    sourceText: z.string().trim().max(12000).optional(),
+    language: testLanguageSchema.optional().default("auto"),
 });
 
 export const createAiTestSchema = generateQuestionsSchema.extend({

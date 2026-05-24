@@ -95,9 +95,7 @@
 
 ## Архитектура
 
-Монорепозиторий на **pnpm**: каталог [`web/`](web/) — Next.js (App Router) и **FSD-слои** в [`web/src`](web/src) (`app`, `views`, `widgets`, `features`, `entities`, `shared`). Слой экранов назван **`views`**, чтобы не использовать каталог `src/pages` (он в Next.js резервируется под [Pages Router](https://nextjs.org/docs/pages)). Каталог [`api/`](api/) зарезервирован под бэкенд (пока пустой, см. [`api/README.md`](api/README.md)).
-
-Приложение в целом — **Next.js fullstack** с разделением UI ↔ API ↔ БД; документированные чеклисты остаются источником правды по функционалу.
+Монорепозиторий на **pnpm**: каталог [`web/`](web/) — **Next.js fullstack** (UI + API Routes + Prisma). FSD-слои в [`web/src`](web/src). Каталог [`api/`](api/) зарезервирован, но не используется — API живёт в `web/src/app/api/`.
 
 ---
 
@@ -114,16 +112,21 @@
 
 ## Быстрый старт
 
-Требования: **Node.js 20+**, **pnpm** (рекомендуется 9+).
+Требования: **Node.js 20+**, **pnpm** (9+), **Docker** (для PostgreSQL).
 
 ```bash
 pnpm install
+docker compose up -d
+cp web/.env.example web/.env.local
+# Проверьте DATABASE_URL (порт 5433) и AUTH_SECRET в web/.env.local
+pnpm --filter web prisma:generate
+pnpm --filter web prisma:deploy
 pnpm dev
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000) — тестовая главная в [`web/src/views/home`](web/src/views/home). Переменные для фронта: скопируйте [`web/.env.example`](web/.env.example) в `web/.env.local` при необходимости.
+Откройте [http://localhost:3000](http://localhost:3000). Подробные сценарии тестирования — в [`web/README.md`](web/README.md).
 
-Сборка фронта: `pnpm build`. Бэкенд в `api/` подключается отдельно, когда будет готов.
+Сборка: `pnpm build`. Бэкенд реализован как **Next.js Route Handlers** в [`web/src/app/api/`](web/src/app/api/); каталог [`api/`](api/) зарезервирован, но пока не используется.
 
 ---
 

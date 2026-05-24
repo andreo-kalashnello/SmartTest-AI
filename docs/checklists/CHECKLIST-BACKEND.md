@@ -2,82 +2,85 @@
 
 Метки: **v1-test** — нужно для тестовой версии; **june-full** — к полному релизу.
 
+**Текущая реализация:** Next.js Route Handlers в [`web/src/app/api/`](../../web/src/app/api/), Prisma в [`web/prisma/`](../../web/prisma/).
+
 ---
 
 ## База данных и Prisma
 
-- [ ] **v1-test** `schema.prisma`: сущности минимум — `User` (преподаватель), `Test`, `Question`, `QuestionOption`, `TestAttempt`, `Answer` (или эквивалентная нормализация)
+- [x] **v1-test** `schema.prisma`: `User`, `Test`, `Question`, `QuestionOption`, `TestAttempt`, `Answer`
+- [x] **v1-test** Первая миграция [`20260522141500_init`](../../web/prisma/migrations/20260522141500_init/migration.sql)
+- [ ] **v1-test** Seed (демо-пользователь) — опционально, пока нет
 - [ ] **june-full** Расширение схемы: типы вопросов, настройки теста, банк вопросов, организации
-- [ ] **june-full** Индексы под выборки аналитики и PIN
+- [x] **v1-test** Индексы на `teacherId`, `pin`, `testId` (базовые)
 
 ---
 
 ## Auth.js
 
-- [ ] **v1-test** Провайдер(ы) по выбору (credentials / OAuth) — достаточно одного способа для демо пока только credentials
-- [ ] **v1-test** Защита API-маршрутов и/или Server Actions для роли преподавателя
-- [ ] **v1-test** Сессии: cookie, безопасные флаги в production
-- [ ] **june-full** Роли, приглашения, восстановление доступа
+- [ ] **v1-test** Auth.js — **не подключён**
+- [x] **v1-test** *Вместо Auth.js:* credentials + httpOnly cookie `smarttest_session` ([`session.ts`](../../web/src/shared/lib/server/session.ts))
+- [x] **v1-test** Защита teacher API через `getCurrentTeacher()` → 401
+- [x] **v1-test** Сессии: httpOnly, sameSite, secure в production
+- [ ] **june-full** OAuth, роли, восстановление доступа
 
 ---
 
 ## API и Zod
 
-- [ ] **v1-test** CRUD теста и вопросов (минимум: create + list + get для преподавателя)
-- [ ] **v1-test** Эндпоинт «начать попытку по PIN»: валидация PIN, создание `TestAttempt`, возврат данных для player
-- [ ] **v1-test** Сохранение ответов ученика, завершение попытки, подсчёт балла (простая логика)
-- [ ] **v1-test** Zod-схемы на body/query для всех публичных эндпоинтов v1
-- [ ] **june-full** Настройки теста в БД и в API; перемешивание вопросов/вариантов на сервере
-- [ ] **june-full** Экспорт CSV/Excel, аналитические агрегаты
+- [x] **v1-test** `GET/POST /api/tests`, `GET/PUT /api/tests/[id]`
+- [x] **v1-test** `POST /api/public/attempts/start` — PIN → попытка + данные для player
+- [x] **v1-test** `PATCH .../answers`, `POST .../complete` — ответы и подсчёт балла
+- [x] **v1-test** `GET /api/tests/[id]/attempts` — список попыток
+- [x] **v1-test** Zod на auth, tests, attempts, AI ([`web/src/shared/lib/server/*-schemas.ts`](../../web/src/shared/lib/server/))
+- [x] **v1-test** `GET /api/health`
+- [ ] **june-full** Настройки теста, перемешивание на сервере
+- [ ] **june-full** Экспорт CSV/Excel, аналитика
 
 ---
 
 ## Socket.IO
 
-- [ ] **june-full** Сервер Socket.IO (тот же процесс или отдельный — по архитектуре), CORS и auth handshake
-- [ ] **june-full** Комнаты по тесту / попытке, события: «ученик на вопросе N», «завершил»
-- [ ] **june-full** _Опционально для v1:_ если live не входит в демо — отложить; иначе минимум одно событие «подключился ученик»
+- [ ] **june-full** Сервер, комнаты, live-события
 
 ---
 
 ## Файлы и парсинг
 
-- [ ] **june-full** Upload endpoint, лимиты размера, MIME-проверки
-- [ ] **june-full** `pdf-parse` для извлечения текста из PDF
-- [ ] **june-full** `mammoth` для DOCX
-- [ ] **june-full** Текстовый ввод без файла — передача в пайплайн AI как есть
+- [ ] **june-full** Upload endpoint, pdf-parse, mammoth
 
 ---
 
 ## AI (OpenRouter)
 
-- [ ] **june-full** Серверный клиент OpenRouter, ключ из env, таймауты и лимиты
-- [ ] **june-full** Промпт + structured output (JSON) для генерации вопросов; валидация Zod перед записью в БД
-- [ ] **june-full** Модели DeepSeek / Qwen free — переключение через конфиг
-- [ ] **v1-test** _Если AI в демо:_ один эндпоинт «сгенерировать N вопросов по теме» с жёстким лимитом токенов; иначе пропустить до июня
+- [x] **v1-test** `POST /api/ai/create-test` — тема, сложность, count, sourceText ([`openrouter.ts`](../../web/src/shared/lib/server/openrouter.ts))
+- [x] **v1-test** Ключ из env, таймаут, лимит токенов, Zod-валидация ответа модели
+- [ ] **june-full** PDF/DOCX → текст → AI; переключение моделей в UI
+- [ ] **june-full** «Умные» дистракторы, доработка промптов
 
 ---
 
 ## PDF (pdf-lib)
 
-- [ ] **june-full** Генерация PDF: бланк для учеников + ключ для преподавателя
-- [ ] **june-full** Скачивание через API или готовый stream с правильными заголовками
+- [ ] **june-full** Генерация бланков и ключей
 
 ---
 
 ## Инфраструктура и качество
 
-- [ ] **v1-test** Dockerfile для Next.js-приложения (multi-stage по best practices)
-- [ ] **v1-test** `docker-compose.yml`: сервис приложения + PostgreSQL, volume для данных
-- [ ] **june-full** Healthcheck, логирование запросов, rate limiting на чувствительных маршрутах
-- [ ] **june-full** Бэкапы БД на VPS (cron + скрипт или managed backup)
+- [ ] **v1-test** Dockerfile для Next.js — **нет**
+- [x] **v1-test** `docker-compose.yml` — **только PostgreSQL** (порт 5433)
+- [ ] **v1-test** Compose «app + postgres» одной командой
+- [ ] **june-full** Rate limiting, structured logging, бэкапы БД
 
 ---
 
 ## Definition of Done — тестовая v1
 
-1. Миграции применяются на чистой БД, Prisma Client генерируется в CI/локально.
-2. Преподаватель аутентифицирован, может создать тест и вопросы через API (или через UI → API).
-3. Ученик по PIN создаёт попытку, отправляет ответы, получает итог; данные персистятся.
-4. Все входы v1 валидируются Zod; типичные ошибки возвращают 4xx с понятным телом.
-5. `docker compose up` поднимает приложение и PostgreSQL для локальной демонстрации.
+1. [x] Миграции на чистой БД (`pnpm --filter web prisma:deploy`).
+2. [x] Преподаватель: register/login → CRUD теста через API/UI.
+3. [x] Ученик: PIN → попытка → ответы → результат в PostgreSQL.
+4. [x] Zod + 4xx с `{ message }`.
+5. [ ] `docker compose up` поднимает **всё** приложение (сейчас только БД).
+
+**Запуск и тесты:** [`web/README.md`](../../web/README.md)

@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import type { Test } from "@/entities/test";
+import {
+  MaterialFileUpload,
+  type ScannedSource,
+} from "@/features/upload-test-material";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -22,7 +26,8 @@ const aiSchema = z.object({
   topic: z.string().min(2, "Мінімум 2 символи"),
   count: z.coerce.number().int().min(1).max(10),
   difficulty: z.enum(["easy", "medium", "hard"]),
-  sourceText: z.string().max(8000).optional(),
+  language: z.enum(["auto", "uk", "en"]),
+  sourceText: z.string().max(12000).optional(),
 });
 
 type ManualFormValues = z.infer<typeof manualSchema>;
@@ -37,10 +42,24 @@ async function readErrorMessage(response: Response, fallback: string) {
   }
 }
 
+function buildSourceTextForAi(
+  manual: string | undefined,
+  scanned: ScannedSource[],
+): string | undefined {
+  const parts: string[] = [];
+  if (manual?.trim()) parts.push(manual.trim());
+  for (const item of scanned) {
+    parts.push(`[Скановано: ${item.fileName}]\n${item.text}`);
+  }
+  if (parts.length === 0) return undefined;
+  return parts.join("\n\n---\n\n").slice(0, 12000);
+}
+
 export function TestNewPage() {
   const router = useRouter();
   const [manualError, setManualError] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [scannedSources, setScannedSources] = useState<ScannedSource[]>([]);
 
   const manualForm = useForm<ManualFormValues>({
     resolver: zodResolver(manualSchema),
@@ -54,9 +73,25 @@ export function TestNewPage() {
       topic: "",
       count: 3,
       difficulty: "easy",
+      language: "auto",
       sourceText: "",
     },
   });
+
+  const sourceTextField = aiForm.register("sourceText");
+
+  const appendManualText = (chunk: string) => {
+    const current = aiForm.getValues("sourceText") ?? "";
+    const separator = current.trim() ? "\n\n---\n\n" : "";
+    const next = `${current}${separator}${chunk}`.slice(0, 12000);
+    aiForm.setValue("sourceText", next, { shouldDirty: true });
+  };
+
+  const scannedCount = scannedSources.length;
+  const scannedChars = useMemo(
+    () => scannedSources.reduce((n, s) => n + s.charCount, 0),
+    [scannedSources],
+  );
 
   const onManualSubmit = manualForm.handleSubmit(async ({ title }) => {
     setManualError(null);
@@ -78,6 +113,13 @@ export function TestNewPage() {
 
   const onAiSubmit = aiForm.handleSubmit(async (values) => {
     setAiError(null);
+
+    const sourceText = buildSourceTextForAi(values.sourceText, scannedSources);
+    if (!sourceText && !values.topic.trim()) {
+      setAiError("Вкажіть тему або додайте матеріал / відскануйте файл");
+      return;
+    }
+
     const response = await fetch("/api/ai/create-test", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -87,7 +129,8 @@ export function TestNewPage() {
         topic: values.topic,
         count: values.count,
         difficulty: values.difficulty,
-        sourceText: values.sourceText?.trim() || undefined,
+        language: values.language,
+        sourceText,
       }),
     });
 
@@ -136,6 +179,9 @@ export function TestNewPage() {
       <Card>
         <CardHeader>
           <CardTitle>Створити з ШІ</CardTitle>
+          <p className="text-sm text-gray-500">
+            Мова питань і відповідей — як у темі/матеріалі (або оберіть нижче).
+          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={onAiSubmit} className="space-y-4">
@@ -191,11 +237,46 @@ export function TestNewPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ai-source">Матеріал</Label>
+              <Label htmlFor="ai-language">Мова тесту</Label>
+              <select
+                id="ai-language"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                {...aiForm.register("language")}
+              >
+                <option value="auto">Авто (з теми та матеріалу)</option>
+                <option value="uk">Українська</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
+            <MaterialFileUpload
+              scannedSources={scannedSources}
+              onScannedSourcesChange={setScannedSources}
+              onManualTextAppend={appendManualText}
+              disabled={aiForm.formState.isSubmitting}
+            />
+
+            {scannedCount > 0 && (
+              <p className="text-xs text-emerald-700">
+                Готово до генерації: {scannedCount} файл(ів), ~{scannedChars}{" "}
+                символів розпізнаного тексту (приховано до відправки).
+              </p>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="ai-source">Додатковий текст (необовʼязково)</Label>
+              <p className="text-xs text-gray-500">
+                Власні вимоги або конспект. Фото/PDF скануються окремо — не
+                дублюються сюди автоматично.
+              </p>
               <Textarea
                 id="ai-source"
                 rows={4}
-                {...aiForm.register("sourceText")}
+                placeholder="Наприклад: обовʼязково питання на дискримінант…"
+                name={sourceTextField.name}
+                ref={sourceTextField.ref}
+                onBlur={sourceTextField.onBlur}
+                onChange={sourceTextField.onChange}
               />
               {aiForm.formState.errors.sourceText && (
                 <p className="text-sm text-red-600" role="alert">

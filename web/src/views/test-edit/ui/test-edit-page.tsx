@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import {
-  initFromTest,
   loadTestDraft,
   resetDraft,
   saveTestDraft,

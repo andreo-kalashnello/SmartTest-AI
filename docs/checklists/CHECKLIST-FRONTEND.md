@@ -2,89 +2,85 @@
 
 Метки: **v1-test** — нужно для тестовой версии; **june-full** — к полному релизу.
 
-Фокус команды: **сначала фронт** под минимальный бэкенд; сложные экраны и real-time — по мере готовности API.
+**Состояние:** UI подключён к **реальному API** (`/api/*`). Legacy `localDb` остался только для `seedDemoIfEmpty` в bootstrap (не используется при работе с БД).
 
 ---
 
 ## Проект и TypeScript
 
-- [x] **v1-test** Инициализация Next.js (App Router) в [`web/`](../../web/), менеджер пакетов **pnpm**
-- [x] **v1-test** Строгий TypeScript (`strict: true`), единый стиль импортов
-- [ ] **june-full** ESLint + Prettier (или Biome), pre-commit по желанию
+- [x] **v1-test** Next.js App Router в [`web/`](../../web/), **pnpm**
+- [x] **v1-test** TypeScript strict
+- [x] **v1-test** ESLint (next lint в build)
+- [ ] **june-full** Prettier / pre-commit
 
 ---
 
 ## Стили и UI-kit
 
-- [x] **v1-test** Tailwind CSS подключён, базовые токены (цвета, шрифты, радиусы) согласованы с продуктом
-- [x] **v1-test** shadcn/ui: Button, Input, Label, Card, Dialog (или Sheet) — минимум для форм и модалок
-- [x] **v1-test** Textarea, LoadingButton, Badge — для редакторов и форм v1
-- [ ] **june-full** Расширение набора компонентов (Table, Tabs, Toast, Dropdown и т.д.)
-- [ ] **june-full** Тёмная тема / переключатель, если входит в дизайн
+- [x] **v1-test** Tailwind CSS
+- [x] **v1-test** shadcn/ui: Button, Input, Label, Card, Dialog
+- [x] **v1-test** Textarea, LoadingButton, Badge
+- [ ] **june-full** Table, Tabs, Toast, Dropdown
 
 ---
 
 ## Redux
 
-- [x] **v1-test** Store: конфигурация (Redux Toolkit) в [`web/src/shared/lib/store`](../../web/src/shared/lib/store)
-- [x] **v1-test** Слайсы: `authSession`, `teacherTestDraft`, `studentAttempt` (+ `appShell`)
-- [x] **v1-test** Async thunks для локального демо (`localDb`); **потрібен бек** для RTK Query / реальних API
-- [ ] **june-full** Кэширование списков тестов, инвалидация после мутаций
-- [ ] **june-full** Оптимистичные обновления там, где уместно
+- [x] **v1-test** Store + слайсы `authSession`, `teacherTestDraft`, `studentAttempt`, `appShell`
+- [x] **v1-test** Thunks → `/api/auth/*`, `/api/tests/*`, `/api/public/attempts/*`
+- [ ] **june-full** RTK Query, кэш, инвалидация
 
 ---
 
 ## Маршруты и layout
 
-- [x] **v1-test** Публичная главная + `/join` (PIN + ПІБ)
-- [x] **v1-test** `/login`, `/register` — зона викладача (локальна авторизація)
-- [x] **v1-test** `/dashboard`, створення/редагування тесту, спроби
-- [x] **v1-test** Player: `/test/[pin]/play` — один вопрос, прогресс, «Далі» / «Завершити»
-- [x] **v1-test** Результат: `/test/[pin]/results`
-- [x] **v1-test** Layout teacher (`AuthGuard` + header); **потрібен бек** для Next middleware + серверної сесії
-- [ ] **june-full** Окремі marketing layout; Socket live
+- [x] **v1-test** `/`, `/join`, `/login`, `/register`, `/dashboard/*`, `/test/[pin]/*`, 404
+- [x] **v1-test** Teacher layout: `AuthGuard` + `TeacherHeader`
+- [x] **v1-test** `/dashboard/tests/new` — ручное создание **+ форма «Створити з ШІ»**
+- [ ] **june-full** Marketing layout; live-мониторинг
 
 ---
 
 ## Формы и UX
 
-- [x] **v1-test** Zod + react-hook-form (login, register, join, new test)
-- [x] **v1-test** Loading / ошибки на кнопках и формах (`LoadingButton`, `role="alert"`)
-- [ ] **june-full** Skeleton-экраны, пустые состояния, i18n при необходимости
+- [x] **v1-test** Zod + react-hook-form
+- [x] **v1-test** Loading / ошибки на формах
+- [ ] **june-full** Skeleton, пустые состояния, i18n
 
 ---
 
 ## Интеграция с бэкендом
 
-- [x] **v1-test** `apiFetch` + `ApiError`, base URL з `NEXT_PUBLIC_API_URL`
-- [x] **v1-test** Обработка 401/403 в `apiFetch` (**потрібен бек** — зараз дашборд через клієнтський `AuthGuard` + sessionStorage)
-- [x] **v1-test** Демо без API: `web/src/shared/lib/storage/local-db.ts`
-- [ ] **june-full** Socket.IO client, переподключение, индикатор «live»
-- [ ] **june-full** Загрузка файлов (progress, ограничение размера на клиенте)
+- [x] **v1-test** Fetch к same-origin `/api/*` с `credentials: "include"`
+- [x] **v1-test** Cookie-сессия (hydrate через `/api/auth/me`)
+- [x] **v1-test** `apiFetch` + `ApiError` (для внешнего API, если понадобится)
+- [ ] **v1-test** Убрать legacy `localDb` из bootstrap
+- [ ] **v1-test** Обновить тексты форм login/join (ещё упоминают localStorage / demo PIN)
+- [ ] **june-full** Socket.IO client
 
 ---
 
 ## Доступность и адаптив
 
-- [x] **v1-test** Мобильная вёрстка для player и `/join` (mobile-first, кнопки на всю ширину)
-- [x] **v1-test** Label + `aria-invalid`, progressbar, radiogroup у плеєрі
-- [ ] **june-full** Прогоны с клавиатуры по основным сценариям
+- [x] **v1-test** Mobile-first: join, player
+- [x] **v1-test** Labels, aria-invalid, progressbar, radiogroup
+- [ ] **june-full** Полный keyboard audit
 
 ---
 
-## FSD (Feature-Sliced Design)
+## FSD
 
-- [x] **v1-test** Каркас FSD у [`web/src`](../../web/src): `app`, `views`, `widgets`, `features`, `entities`, `shared`
-- [ ] **june-full** Дотримання правил публічних API шарів, рефакторинг імпортів
+- [x] **v1-test** Каркас `app`, `views`, `widgets`, `features`, `entities`, `shared`
+- [ ] **june-full** Строгая изоляция слоёв
 
 ---
 
 ## Definition of Done — тестовая v1
 
-1. [x] Преподаватель после входа может создать тест с несколькими вопросами (один правильный ответ) и получить PIN (локально; **потрібен бек** для серверного PIN/посилання).
-2. [x] Ученик вводит PIN и имя, проходит все вопросы, видит итог.
-3. [x] Ключевые действия: loading и сообщения об ошибках.
-4. [x] Интерфейс для демо на телефоне (player + join).
-5. [x] Redux для сессии, черновика теста и попытки ученика.
+1. [x] Преподаватель создаёт тест, получает PIN из API.
+2. [x] Ученик проходит тест, видит результат.
+3. [x] Loading и ошибки на ключевых действиях.
+4. [x] Адаптив player + join.
+5. [x] Redux для сессии, черновика, попытки.
 
-**Як тестувати:** [`web/README.md`](../../web/README.md)
+**Запуск и тесты:** [`web/README.md`](../../web/README.md)

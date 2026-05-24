@@ -7,6 +7,7 @@ import {
 } from '@/shared/lib/server/api-response';
 import { createAiTestSchema } from '@/shared/lib/server/ai-schemas';
 import { getCurrentTeacher } from '@/shared/lib/server/current-user';
+import { resolveTestLanguage } from '@/shared/lib/server/detect-language';
 import { generateQuestionsWithOpenRouter } from '@/shared/lib/server/openrouter';
 import { generateUniquePin } from '@/shared/lib/server/pin';
 import { prisma } from '@/shared/lib/server/prisma';
@@ -29,7 +30,16 @@ export async function POST(request: NextRequest) {
         return validationError(parsed.error);
     }
 
-    const result = await generateQuestionsWithOpenRouter(parsed.data);
+    const result = await generateQuestionsWithOpenRouter({
+        ...parsed.data,
+        title: parsed.data.title ?? parsed.data.topic,
+    });
+
+    const languageUsed = resolveTestLanguage(parsed.data.language ?? 'auto', [
+        parsed.data.title,
+        parsed.data.topic,
+        parsed.data.sourceText,
+    ]);
 
     if (!result.ok) {
         return NextResponse.json(
@@ -68,6 +78,7 @@ export async function POST(request: NextRequest) {
             test: serializeTeacherTest(test),
             model: result.model,
             usage: result.usage,
+            language: languageUsed,
         },
         { status: 201 },
     );

@@ -1,71 +1,53 @@
 # Чеклист: приложение целиком (сквозные задачи)
 
-Метки: **v1-test** — нужно для тестовой версии; **june-full** — к полному релизу.
-
 ---
 
 ## Репозиторий и соглашения
 
-- [ ] **v1-test** `.gitignore`: `.env`, `.next`, `node_modules`, логи, IDE
-- [ ] **v1-test** `.env.example` со всеми переменными без секретов (DATABASE_URL, AUTH_SECRET, OPENROUTER_API_KEY и т.д.)
-- [ ] **june-full** CONTRIBUTING или короткий раздел в README: ветки, PR, линт до коммита
+- [x] **v1-test** `.gitignore` (env, .next, node_modules)
+- [x] **v1-test** `web/.env.example` (DATABASE_URL, AUTH_SECRET, OPENROUTER_*)
+- [ ] **june-full** CONTRIBUTING
 
 ---
 
 ## Контракт API и типы
 
-- [ ] **v1-test** Согласованные префиксы маршрутов (`/api/...` или route handlers)
-- [ ] **v1-test** Единый формат ошибок: `{ error: string, code?: string }` (или зафиксированный аналог)
-- [ ] **june-full** Версионирование API при ломающих изменениях
-- [ ] **june-full** OpenAPI или сгенерированные типы для фронта (по желанию)
+- [x] **v1-test** Префикс `/api/*` (Next Route Handlers)
+- [x] **v1-test** Ошибки: `{ message }`, validation → `{ message, errors }`
+- [ ] **june-full** OpenAPI / shared types
 
 ---
 
 ## Безопасность
 
-- [ ] **v1-test** Секреты только в env, не в коде
-- [ ] **v1-test** HTTPS на проде (Nginx + Let’s Encrypt)
-- [ ] **v1-test** Защита от CSRF для cookie-based сессий (механизм Auth.js)
-- [ ] **june-full** Rate limit на логин, на AI, на upload
-- [ ] **june-full** Политика CORS: явный whitelist origin’ов
-
----
-
-## Наблюдаемость и ошибки
-
-- [ ] **v1-test** Централизованная обработка необработанных ошибок на API (не «сырой» stack в ответе в prod)
-- [ ] **june-full** Структурированные логи, опционально Sentry/OpenTelemetry
+- [x] **v1-test** Секреты в env (не в коде)
+- [ ] **v1-test** HTTPS на проде
+- [ ] **v1-test** CSRF для cookie-сессий (не реализовано)
+- [ ] **june-full** Rate limit (login, AI, upload)
 
 ---
 
 ## Docker и локальная среда
 
-- [ ] **v1-test** Один compose-файл для «поднять всё» на машине разработчика
-- [ ] **v1-test** Документированные команды в README после появления кода
-- [ ] **june-full** Отдельный override для prod-сборки без dev-зависимостей
+- [x] **v1-test** `docker-compose.yml` — PostgreSQL
+- [x] **v1-test** Команды в [`web/README.md`](../../web/README.md) и корневом README
+- [ ] **v1-test** Один compose поднимает app + DB
 
 ---
 
-## Деплой (VPS Ubuntu + Nginx)
+## Деплой (VPS)
 
-- [ ] **v1-test** Сборка образа или `next build` на сервере, процесс-менеджер (systemd или pm2)
-- [ ] **v1-test** Nginx reverse proxy на Node/порт приложения, gzip/static при необходимости
-- [ ] **v1-test** Переменные окружения на сервере (файл + права, не в git)
-- [ ] **june-full** Автоматический деплой (GitHub Actions → SSH) по тегам
-- [ ] **june-full** Ротация логов, мониторинг диска и БД
-
----
-
-## Данные и соответствие
-
-- [ ] **june-full** Регламент хранения персональных данных (ФИО ученика), минимизация полей
-- [ ] **june-full** Бэкапы PostgreSQL и проверка восстановления
+- [ ] **v1-test** Prod-сборка на сервере
+- [ ] **v1-test** Nginx reverse proxy
+- [ ] **june-full** CI/CD
 
 ---
 
 ## Definition of Done — тестовая v1
 
-1. Новый разработчик по README + `.env.example` может поднять проект локально через Docker.
-2. Демо на VPS доступно по HTTPS, основной сценарий преподаватель → ученик проходит end-to-end.
-3. Секреты не попадают в репозиторий; prod-конфиг отделён от dev.
-4. Ошибки API не раскрывают внутренние детали стека в production-режиме.
+1. [x] Новый разработчик может поднять проект по README (Postgres + migrate + dev).
+2. [ ] Демо на VPS по HTTPS.
+3. [x] Секреты не в git.
+4. [x] API не отдаёт stack trace в prod-ответах (generic 500).
+
+**Запуск и тесты:** [`web/README.md`](../../web/README.md)

@@ -1,50 +1,133 @@
-# SmartTest AI — фронтенд (`web`)
+# SmartTest AI — приложение (`web`)
 
-Next.js 15 (App Router), React 19, Redux Toolkit, Tailwind, shadcn/ui, Zod, react-hook-form.
+Next.js 15 fullstack: UI + API Routes + Prisma + PostgreSQL.
 
-## Запуск
+**Стек:** React 19, Redux Toolkit, Tailwind, shadcn/ui, Zod, react-hook-form, OpenRouter (ИИ).
+
+---
+
+## Требования
+
+- Node.js 20+
+- pnpm 9+
+- Docker (для PostgreSQL) или свой экземпляр Postgres
+
+---
+
+## Запуск с нуля
+
+### 1. PostgreSQL
 
 ```bash
-# з кореня монорепо
-pnpm install
-pnpm --filter web dev
+# из корня репозитория
+docker compose up -d
 ```
 
-Відкрийте http://localhost:3000
+Postgres слушает **localhost:5433** (см. `docker-compose.yml`).
 
-## Тестова v1 (без бекенду)
+### 2. Переменные окружения
 
-Дані зберігаються в **localStorage** (користувачі, тести, спроби) та **sessionStorage** (сесія викладача). При першому відкритті створюється демо-тест з PIN `123456`.
+```bash
+cp web/.env.example web/.env.local
+```
 
-### Сценарій викладача
+Минимум в `web/.env.local`:
 
-1. `/register` — реєстрація (email, пароль, ім'я).
-2. `/dashboard` — список тестів, «Створити тест».
-3. `/dashboard/tests/new` — назва → редактор.
-4. `/dashboard/tests/[id]/edit` — питання, один правильний варіант, «Зберегти».
-5. Скопіюйте PIN з картки або редактора.
-6. `/dashboard/tests/[id]/attempts` — таблиця спроб учнів (після проходження).
+```env
+DATABASE_URL="postgresql://smarttest:smarttest@localhost:5433/smarttest?schema=public"
+AUTH_SECRET="dev-secret-at-least-32-characters-long"
+OPENROUTER_API_KEY="sk-or-..."   # только для «Создать с ИИ»
+OPENROUTER_MAX_TOKENS="3000"     # для reasoning-моделей (cobuddy) не ставьте 700
+```
 
-### Сценарій учня
+### 3. Миграции и Prisma Client
 
-1. `/join` — PIN `123456` (демо) + ПІБ.
-2. `/test/[pin]/play` — плеєр, прогрес, «Далі» / «Завершити».
-3. `/test/[pin]/results` — бал і відсоток.
+```bash
+pnpm install
+pnpm --filter web prisma:generate
+pnpm --filter web prisma:deploy
+```
 
-### Захист маршрутів
+### 4. Dev-сервер
 
-**Тимчасово** `/dashboard` доступний без логіну (`NEXT_PUBLIC_SKIP_AUTH` за замовчуванням не `false`).
+```bash
+pnpm dev
+```
 
-Щоб знову вимагати вхід: у `web/.env.local` додайте `NEXT_PUBLIC_SKIP_AUTH=false` і перезапустіть dev.
+Откройте http://localhost:3000
 
-**Потрібен бек** для middleware + JWT/сесії Auth.js.
+### Проверка API
 
-### API
+```bash
+curl http://localhost:3000/api/health
+```
 
-`NEXT_PUBLIC_API_URL` у `.env` — коли з'явиться бекенд. Зараз thunks використовують `localDb`; `apiFetch` кидає помилку, якщо URL порожній.
+---
 
-## Збірка
+## Как протестировать (сквозной сценарий)
+
+### A. Преподаватель
+
+1. **Регистрация:** http://localhost:3000/register  
+   Email, пароль (≥6), имя → редирект на `/dashboard`.
+
+2. **Список тестов:** http://localhost:3000/dashboard  
+   Без входа API вернёт 401 — список будет пустым. Нужна сессия (cookie).
+
+3. **Создать тест вручную:** «Створити тест» → название → редактор.  
+   Добавьте вопросы, отметьте один правильный вариант → «Зберегти».
+
+4. **Создать с ИИ:** на `/dashboard/tests/new` — блок «Створити з ШІ»  
+   Тема, количество (1–10), сложность, опционально текст материала.  
+   Нужен `OPENROUTER_API_KEY` в `.env.local`.
+
+5. **PIN:** на карточке теста или в редакторе — скопируйте 6-значный PIN.
+
+6. **Спроби:** `/dashboard/tests/[id]/attempts` — таблица после прохождения учеником.
+
+### B. Ученик
+
+1. http://localhost:3000/join — PIN + ФИО.  
+2. Плеер: ответы → «Далі» → «Завершити».  
+3. Результат: балл и процент.
+
+### C. Выход
+
+Кнопка «Вийти» в шапке дашборда → `/api/auth/logout`.
+
+---
+
+## Временные настройки
+
+| Переменная | По умолчанию | Назначение |
+|------------|--------------|------------|
+| `NEXT_PUBLIC_SKIP_AUTH` | не `false` | UI дашборда без редиректа на `/login`. **API всё равно требует cookie.** |
+| `NEXT_PUBLIC_SKIP_AUTH=false` | — | Строгий `AuthGuard` на `/dashboard/*`. |
+
+---
+
+## Сборка
 
 ```bash
 pnpm --filter web build
+pnpm --filter web start
 ```
+
+---
+
+## API (v1)
+
+| Метод | Путь | Кто |
+|-------|------|-----|
+| GET | `/api/health` | все |
+| POST | `/api/auth/register`, `/login`, `/logout` | все / teacher |
+| GET | `/api/auth/me` | teacher |
+| GET/POST | `/api/tests` | teacher |
+| GET/PUT | `/api/tests/[id]` | teacher |
+| GET | `/api/tests/[id]/attempts` | teacher |
+| POST | `/api/ai/create-test` | teacher + OpenRouter |
+| POST | `/api/public/attempts/start` | ученик (PIN) |
+| PATCH | `/api/public/attempts/[id]/answers` | ученик |
+| POST | `/api/public/attempts/[id]/complete` | ученик |
+
+Авторизация: httpOnly cookie `smarttest_session` (своя реализация, не Auth.js).

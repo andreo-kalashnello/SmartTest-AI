@@ -1,7 +1,6 @@
 # Чеклист: сторінки фронтенду (SmartTest AI)
 
-Метки: **v1-test** — для тестової версії; **june-full** — до повного релізу.
-Маршрути відповідають App Router у `web/src/app/`.
+Метки: **v1-test** / **june-full**. Маршрути: `web/src/app/`.
 
 ---
 
@@ -9,73 +8,56 @@
 
 | Сторінка | Маршрут | Статус |
 |----------|---------|--------|
-| Лендінг (головна) | `/` | **v1-test** |
-| Реєстрація | `/register` | **v1-test** |
-| Вхід | `/login` | **v1-test** |
-| Вхід учня за PIN | `/join` | **v1-test** |
-| 404 Not Found | — | **v1-test** |
+| Лендінг | `/` | **v1-test** ✅ |
+| Реєстрація | `/register` | **v1-test** ✅ |
+| Вхід | `/login` | **v1-test** ✅ |
+| Учень за PIN | `/join` | **v1-test** ✅ |
+| 404 | `not-found` | **v1-test** ✅ |
 
-### Чекбокси
-
-- [x] **v1-test** `/` — лендінг зі шапкою, Hero, Можливості, Як це працює, Для кого, CTA, підвал
-- [x] **v1-test** `/register` — форма реєстрації (email, пароль, ім'я) для викладача (localStorage; **потрібен бек** Auth.js)
-- [x] **v1-test** `/login` — форма входу (email + пароль), посилання на реєстрацію
-- [x] **v1-test** `/join` — форма учня: PIN + ПІБ, перехід до плеєра
-- [x] **v1-test** `not-found.tsx` — 404
-- [ ] **june-full** `/forgot-password` — відновлення пароля
-- [ ] **june-full** `/verify-email` — підтвердження пошти
+- [x] **v1-test** `/` — лендінг
+- [x] **v1-test** `/register` — реєстрація → API + cookie
+- [x] **v1-test** `/login` — вхід → API + cookie
+- [x] **v1-test** `/join` — PIN + ПІБ → API
+- [x] **v1-test** 404
+- [ ] **june-full** `/forgot-password`, `/verify-email`
 
 ---
 
-## Зона викладача (потрібна авторизація)
+## Зона викладача
 
 | Сторінка | Маршрут | Статус |
 |----------|---------|--------|
-| Дашборд / список тестів | `/dashboard` | **v1-test** |
-| Створення тесту | `/dashboard/tests/new` | **v1-test** |
-| Редактор тесту | `/dashboard/tests/[id]/edit` | **v1-test** |
-| Налаштування тесту | `/dashboard/tests/[id]/settings` | **june-full** |
-| Список спроб | `/dashboard/tests/[id]/attempts` | **v1-test** |
-| Live-моніторинг | `/dashboard/tests/[id]/live` | **june-full** |
-| Банк питань | `/dashboard/question-bank` | **june-full** |
-| Профіль / Налаштування | `/dashboard/profile` | **june-full** |
+| Дашборд | `/dashboard` | **v1-test** ✅ |
+| Новий тест | `/dashboard/tests/new` | **v1-test** ✅ (+ ШІ) |
+| Редактор | `/dashboard/tests/[id]/edit` | **v1-test** ✅ |
+| Спроби | `/dashboard/tests/[id]/attempts` | **v1-test** ✅ |
 
-### Чекбокси
-
-- [x] **v1-test** `/dashboard` — список тестів (картки), кнопка «Створити тест»
-- [x] **v1-test** `/dashboard/tests/new` — форма: назва, потім перехід до редактора
-- [x] **v1-test** `/dashboard/tests/[id]/edit` — редактор питань: одна правильна відповідь; додати / видалити питання / варіант
-- [x] **v1-test** `/dashboard/tests/[id]/attempts` — таблиця спроб: ПІБ учня, бал, час (**потрібен бек** для live-оновлення)
-- [ ] **june-full** `/dashboard/tests/[id]/settings` — таймер, античит, вікно доступності, зворотний зв'язок
-- [ ] **june-full** `/dashboard/tests/[id]/live` — Socket.IO live: хто зараз проходить, на якому питанні
-- [ ] **june-full** `/dashboard/question-bank` — збережені питання, пошук, теги
-- [ ] **june-full** `/dashboard/profile` — зміна email, пароля, аватара
+- [x] **v1-test** `/dashboard` — список з API
+- [x] **v1-test** `/dashboard/tests/new` — вручну + **Створити з ШІ**
+- [x] **v1-test** `/dashboard/tests/[id]/edit`
+- [x] **v1-test** `/dashboard/tests/[id]/attempts`
+- [ ] **june-full** settings, live, question-bank, profile
 
 ---
 
-## Зона учня (без авторизації)
+## Зона учня
 
 | Сторінка | Маршрут | Статус |
 |----------|---------|--------|
-| Плеєр тесту | `/test/[pin]/play` | **v1-test** |
-| Результат | `/test/[pin]/results` | **v1-test** |
+| Плеєр | `/test/[pin]/play` | **v1-test** ✅ |
+| Результат | `/test/[pin]/results` | **v1-test** ✅ |
 
-### Чекбокси
-
-- [x] **v1-test** `/test/[pin]/play` — Test Player: вопрос, варіанти відповіді, прогрес, кнопка «Далі», «Завершити»
-- [x] **v1-test** `/test/[pin]/results` — бал, кількість правильних/неправильних, посилання назад
-- [ ] **june-full** Таймер зі спливанням і автозавершенням
-- [ ] **june-full** AI-пояснення помилок
-- [ ] **june-full** Пропуск питання і повернення
+- [x] **v1-test** play + results
+- [ ] **june-full** таймер, AI-пояснення, пропуск
 
 ---
 
-## Definition of Done — тестова v1 (сторінки)
+## Definition of Done — v1
 
-1. [x] Усі маршрути `v1-test` відображаються без помилок 404/500.
-2. [x] Сторінки реєстрації та входу ведуть на дашборд після успішного запиту (локально).
-3. [x] Учень за PIN потрапляє в плеєр, проходить тест, бачить результат.
-4. [x] Дашборд захищений — неавторизований → `/login` (**потрібен бек** для server middleware).
-5. [x] Усі сторінки адаптивні (mobile-first).
+1. [x] Маршрути v1 без 404/500
+2. [x] Login/register → dashboard (потрібна БД + migrate)
+3. [x] Учень: PIN → play → results
+4. [~] Захист dashboard: API 401 без cookie; UI — тимчасово `SKIP_AUTH` (middleware — ні)
+5. [x] Адаптив
 
-**Як тестувати:** [`web/README.md`](../../web/README.md)
+**Запуск і тести:** [`web/README.md`](../../web/README.md)
