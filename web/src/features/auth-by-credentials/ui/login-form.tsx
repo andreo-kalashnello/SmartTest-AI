@@ -46,9 +46,7 @@ export function LoginForm() {
     <Card className="w-full max-w-md border-gray-200 shadow-sm">
       <CardHeader>
         <CardTitle className="text-xl">Вхід для викладача</CardTitle>
-        <p className="text-sm text-gray-500">
-          Демо без бекенду: дані зберігаються в браузері (localStorage).
-        </p>
+        
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
