@@ -1,92 +1,99 @@
-import {
-  BarChart3,
-  FileText,
-  QrCode,
-  Shield,
-  Timer,
-  Wand2,
-} from "lucide-react";
+"use client";
+
+import { motion } from "framer-motion";
+import { fadeIn, stagger } from "@/shared/ui/motion";
+import { Brain, FileText, BarChart3, Users, Zap, Shield } from "lucide-react";
 
 const FEATURES = [
   {
-    icon: Wand2,
-    color: "bg-violet-100 text-violet-600",
-    accent: "group-hover:bg-violet-200",
-    title: "AI-генерація тестів",
-    desc: "Завантажте PDF, DOCX або вставте текст — ШІ сам створить питання зі «smart» дистракторами.",
+    icon: Brain,
+    title: "AI-генерація питань",
+    desc: "Завантажте PDF або фото конспекту — штучний інтелект створить якісний тест за 30–90 секунд.",
+    color: "from-violet-500 to-purple-600",
+    bg: "bg-violet-50",
   },
   {
-    icon: FileText,
-    color: "bg-amber-100 text-amber-600",
-    accent: "group-hover:bg-amber-200",
-    title: "Зручний редактор",
-    desc: "Повний контроль над контентом: додавайте, редагуйте, видаляйте питання та зберігайте банк.",
+    icon: Zap,
+    title: "PIN-доступ за секунди",
+    desc: "Учні входять у тест без реєстрації: просто введіть 6-значний PIN і починайте відповідати.",
+    color: "from-amber-500 to-orange-500",
+    bg: "bg-amber-50",
   },
   {
     icon: BarChart3,
-    color: "bg-emerald-100 text-emerald-600",
-    accent: "group-hover:bg-emerald-200",
-    title: "Детальна аналітика",
-    desc: "Середній бал класу, рейтинг учнів та виявлення «прогалин» у знаннях — у реальному часі.",
+    title: "Аналітика та статистика",
+    desc: "Відслідковуйте прогрес кожного учня, середні бали та рейтинги по класах і предметах.",
+    color: "from-blue-500 to-cyan-600",
+    bg: "bg-blue-50",
   },
   {
-    icon: Timer,
-    color: "bg-rose-100 text-rose-600",
-    accent: "group-hover:bg-rose-200",
-    title: "Гнучкі налаштування",
-    desc: "Таймер, античит-перемішування, вікна доступності та вибір зворотного зв'язку.",
+    icon: FileText,
+    title: "Домашні завдання",
+    desc: "Призначайте ДЗ з дедлайнами, перевіряйте виконання та ставте оцінки в кілька кліків.",
+    color: "from-emerald-500 to-teal-600",
+    bg: "bg-emerald-50",
   },
   {
-    icon: QrCode,
-    color: "bg-sky-100 text-sky-600",
-    accent: "group-hover:bg-sky-200",
-    title: "PIN та QR-код",
-    desc: "Учень заходить без реєстрації: вводить 6-значний PIN або сканує QR прямо в класі.",
+    icon: Users,
+    title: "Кабінет учня",
+    desc: "Учні бачать свої оцінки, домашні завдання та результати тестів в особистому кабінеті.",
+    color: "from-pink-500 to-rose-600",
+    bg: "bg-pink-50",
   },
   {
     icon: Shield,
-    color: "bg-orange-100 text-orange-600",
-    accent: "group-hover:bg-orange-200",
-    title: "Офлайн PDF",
-    desc: "Одна кнопка — і готовий красивий PDF: бланки для учнів та ключ відповідей для викладача.",
+    title: "Безпека і надійність",
+    desc: "Дані зберігаються на захищеному сервері. Відповідає вимогам GDPR для навчальних закладів.",
+    color: "from-gray-600 to-slate-700",
+    bg: "bg-gray-50",
   },
-] as const;
+];
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="bg-white py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-14 text-center">
-          <span className="text-sm font-semibold uppercase tracking-widest text-violet-600">
-            Можливості
+    <section className="py-24 bg-white">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <span className="inline-block rounded-full bg-violet-100 px-4 py-1.5 text-sm font-semibold text-violet-700 mb-4">
+            Функції
           </span>
-          <h2 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-            Все, що потрібно для тестування
+          <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            Все що потрібно для
+            <span className="text-gradient"> сучасного навчання</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-gray-500">
-            Від генерації питань до аналізу результатів — платформа бере на
-            себе рутину.
+          <p className="mt-4 text-lg text-gray-500 max-w-2xl mx-auto">
+            Повна платформа для вчителів і учнів — від генерації тестів до журналу оцінок
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="group rounded-2xl border border-gray-100 bg-gray-50 p-6 transition-shadow hover:shadow-md"
+        <motion.div
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {FEATURES.map((feat, i) => (
+            <motion.div
+              key={feat.title}
+              variants={fadeIn}
+              custom={i}
+              className={`group rounded-2xl ${feat.bg} p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg border border-transparent hover:border-white`}
             >
-              <div
-                className={`inline-flex rounded-xl p-3 transition-colors ${f.color} ${f.accent}`}
-              >
-                <f.icon className="size-5" />
+              <div className={`inline-flex size-12 items-center justify-center rounded-xl bg-gradient-to-br ${feat.color} mb-4 shadow-md`}>
+                <feat.icon className="size-6 text-white" />
               </div>
-              <h3 className="mt-4 font-semibold text-gray-900">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-500">
-                {f.desc}
-              </p>
-            </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{feat.title}</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">{feat.desc}</p>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

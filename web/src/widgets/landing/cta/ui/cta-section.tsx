@@ -1,47 +1,44 @@
-import Link from "next/link";
-import { ArrowRight, Zap } from "lucide-react";
+"use client";
 
-import { Button } from "@/shared/ui/button";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowRight, Zap } from "lucide-react";
 
 export function CtaSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 py-20">
-      {/* Blobs */}
-      <div className="pointer-events-none absolute -left-20 -top-20 size-72 rounded-full bg-white/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -right-20 size-72 rounded-full bg-pink-300/20 blur-3xl" />
-
-      <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium text-white">
-          <Zap className="size-3.5" />
-          Перший тест за 5 хвилин
-        </div>
-
-        <h2 className="text-3xl font-bold text-white sm:text-4xl">
-          Готові спростити тестування?
-        </h2>
-        <p className="mx-auto mt-4 max-w-lg text-lg text-indigo-100">
-          Почніть безкоштовно сьогодні — без кредитної картки та зобов&apos;язань.
-        </p>
-
-        <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-          <Button
-            size="lg"
-            className="bg-white text-indigo-700 shadow-xl hover:bg-indigo-50"
-            asChild
-          >
-            <Link href="/register">
-              Зареєструватись
-              <ArrowRight className="ml-2 size-4" />
+    <section className="py-24 bg-gradient-to-br from-slate-50 to-violet-50">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="inline-flex size-20 items-center justify-center rounded-3xl gradient-primary mb-6 shadow-xl">
+            <Zap className="size-10 text-white" />
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl mb-4">
+            Готові створити перший тест?
+          </h2>
+          <p className="text-lg text-gray-500 mb-8">
+            Безкоштовно для шкіл і університетів. Реєстрація займе менше 1 хвилини.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/register"
+              className="group inline-flex items-center gap-2 rounded-xl gradient-primary px-8 py-3.5 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:opacity-90"
+            >
+              Почати безкоштовно
+              <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
             </Link>
-          </Button>
-          <Button
-            size="lg"
-            className="border border-white/30 bg-white/10 text-white hover:bg-white/20"
-            asChild
-          >
-            <Link href="/join">Увійти з PIN</Link>
-          </Button>
-        </div>
+            <Link
+              href="/join"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-violet-200 bg-white px-8 py-3.5 text-base font-semibold text-violet-700 transition-all hover:border-violet-400"
+            >
+              Пройти тест за PIN
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

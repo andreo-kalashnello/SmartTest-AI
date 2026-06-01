@@ -1,89 +1,104 @@
-import { GraduationCap, Users2, CheckCircle2 } from "lucide-react";
+"use client";
 
-const FOR_TEACHER = [
-  "Генерація тестів з PDF, DOCX, тексту",
-  "Редактор питань з банком",
-  "PIN, QR-код та пряме посилання",
-  "Live-моніторинг проходження",
-  "Детальна аналітика класу",
-  "Генерація PDF-бланків",
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowRight, BookOpen, GraduationCap } from "lucide-react";
+
+const TEACHER_ITEMS = [
+  "Генерація тестів з PDF/фото за 60 секунд",
+  "Журнал оцінок і домашні завдання",
+  "Статистика та аналітика по класах",
+  "Поділення PIN/QR з учнями",
+  "Редагування і банк питань",
 ];
 
-const FOR_STUDENT = [
-  "Вхід без реєстрації — тільки PIN та ім'я",
-  "Чистий адаптивний інтерфейс",
-  "Лічильник прогресу та таймер",
-  "Миттєвий результат після завершення",
-  "AI-пояснення помилок (преміум)",
-  "Підтримка смартфонів, планшетів, ПК",
+const STUDENT_ITEMS = [
+  "Особистий кабінет з прогресом",
+  "Проходження тестів за PIN без реєстрації",
+  "Журнал оцінок у зрозумілому форматі",
+  "Список домашніх завдань з дедлайнами",
+  "Історія всіх пройдених тестів",
 ];
-
-interface CardProps {
-  icon: React.ComponentType<{ className?: string }>;
-  gradient: string;
-  badge: string;
-  title: string;
-  items: readonly string[];
-}
-
-function RoleCard({ icon: Icon, gradient, badge, title, items }: CardProps) {
-  return (
-    <div className={`rounded-3xl p-8 text-white ${gradient}`}>
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex size-12 items-center justify-center rounded-2xl bg-white/20">
-          <Icon className="size-6" />
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-white/70">
-            {badge}
-          </p>
-          <h3 className="text-xl font-bold">{title}</h3>
-        </div>
-      </div>
-      <ul className="space-y-3">
-        {items.map((item) => (
-          <li key={item} className="flex items-start gap-2.5 text-sm">
-            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-white/80" />
-            <span className="text-white/90">{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 export function ForWhoSection() {
   return (
-    <section id="for-who" className="bg-white py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-14 text-center">
-          <span className="text-sm font-semibold uppercase tracking-widest text-rose-600">
-            Для кого
-          </span>
-          <h2 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-            Дві ролі — одна платформа
+    <section className="py-24 bg-white">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            Для кого <span className="text-gradient">SmartTest AI</span>?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-gray-500">
-            Викладачі створюють та аналізують, учні — проходять без зайвої
-            реєстрації.
-          </p>
-        </div>
+        </motion.div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <RoleCard
-            icon={GraduationCap}
-            gradient="bg-gradient-to-br from-indigo-600 to-violet-600"
-            badge="Для викладачів"
-            title="Викладач"
-            items={FOR_TEACHER}
-          />
-          <RoleCard
-            icon={Users2}
-            gradient="bg-gradient-to-br from-amber-500 to-orange-500"
-            badge="Для учнів"
-            title="Учень"
-            items={FOR_STUDENT}
-          />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* Teacher */}
+          <motion.div
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 to-purple-700 p-8 text-white"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="absolute -top-8 -right-8 size-40 rounded-full bg-white/10" />
+            <div className="absolute -bottom-8 -left-8 size-32 rounded-full bg-white/10" />
+            <div className="relative">
+              <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-white/20 mb-5">
+                <BookOpen className="size-7" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">👩‍🏫 Вчителям</h3>
+              <ul className="space-y-3 mb-8">
+                {TEACHER_ITEMS.map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-white/90 text-sm">
+                    <span className="size-5 rounded-full bg-white/20 flex items-center justify-center text-xs">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-violet-700 transition-all hover:shadow-lg"
+              >
+                Спробувати безкоштовно <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </motion.div>
+
+          {/* Student */}
+          <motion.div
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 p-8 text-white"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="absolute -top-8 -right-8 size-40 rounded-full bg-white/10" />
+            <div className="absolute -bottom-8 -left-8 size-32 rounded-full bg-white/10" />
+            <div className="relative">
+              <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-white/20 mb-5">
+                <GraduationCap className="size-7" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">🎓 Учням</h3>
+              <ul className="space-y-3 mb-8">
+                {STUDENT_ITEMS.map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-white/90 text-sm">
+                    <span className="size-5 rounded-full bg-white/20 flex items-center justify-center text-xs">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/register?role=student"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-emerald-700 transition-all hover:shadow-lg"
+              >
+                Зареєструватись <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

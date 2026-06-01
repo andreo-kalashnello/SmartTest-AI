@@ -1,71 +1,57 @@
-import { BarChart2, PlusCircle, Share2, UserCircle } from "lucide-react";
+"use client";
+
+import { motion } from "framer-motion";
 
 const STEPS = [
-  {
-    icon: UserCircle,
-    bg: "bg-indigo-500",
-    label: "Реєструєтесь",
-    desc: "Створюєте акаунт викладача за хвилину — email та пароль.",
-  },
-  {
-    icon: PlusCircle,
-    bg: "bg-violet-500",
-    label: "Створюєте тест",
-    desc: "Вручну або через ШІ з вашого PDF / DOCX / тексту.",
-  },
-  {
-    icon: Share2,
-    bg: "bg-pink-500",
-    label: "Надаєте доступ",
-    desc: "Копіюєте PIN або QR-код — учні входять без реєстрації.",
-  },
-  {
-    icon: BarChart2,
-    bg: "bg-emerald-500",
-    label: "Аналізуєте",
-    desc: "Бачите результати та статистику в реальному часі.",
-  },
-] as const;
+  { num: "01", title: "Реєструйтесь", desc: "Безкоштовний акаунт вчителя за 30 секунд", emoji: "✍️" },
+  { num: "02", title: "Завантажте матеріал", desc: "PDF, фото конспекту або введіть тему вручну", emoji: "📄" },
+  { num: "03", title: "AI генерує тест", desc: "30–90 секунд — і готова чернетка питань", emoji: "🤖" },
+  { num: "04", title: "Поділіться PIN", desc: "Учні входять за 6-значним кодом, без реєстрації", emoji: "🔢" },
+  { num: "05", title: "Аналізуйте", desc: "Результати, оцінки й статистика — в реальному часі", emoji: "📊" },
+];
 
 export function HowItWorksSection() {
   return (
-    <section
-      id="how-it-works"
-      className="bg-gradient-to-b from-gray-50 to-white py-20"
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-14 text-center">
-          <span className="text-sm font-semibold uppercase tracking-widest text-emerald-600">
+    <section className="py-24 bg-gradient-to-br from-slate-50 to-violet-50">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <span className="inline-block rounded-full bg-violet-100 px-4 py-1.5 text-sm font-semibold text-violet-700 mb-4">
             Як це працює
           </span>
-          <h2 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-            4 кроки до готового тесту
+          <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            Від матеріалу до тесту — <span className="text-gradient">5 кроків</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-lg text-gray-500">
-            Від реєстрації до результатів — простий і зрозумілий процес.
-          </p>
-        </div>
+        </motion.div>
 
-        <div className="relative grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Connecting line — desktop only */}
-          <div className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-10 hidden h-px bg-gradient-to-r from-indigo-200 via-violet-200 to-emerald-200 lg:block" />
+        <div className="relative">
+          {/* Connecting line */}
+          <div className="absolute top-12 left-8 right-8 h-0.5 bg-gradient-to-r from-violet-200 via-purple-300 to-violet-200 hidden lg:block" />
 
-          {STEPS.map((step, i) => (
-            <div key={step.label} className="flex flex-col items-center text-center">
-              <div
-                className={`relative flex size-20 items-center justify-center rounded-full ${step.bg} text-white shadow-lg`}
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
+            {STEPS.map((step, i) => (
+              <motion.div
+                key={step.num}
+                className="relative flex flex-col items-center text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
               >
-                <step.icon className="size-8" />
-                <span className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-white text-xs font-bold text-gray-800 ring-2 ring-gray-200">
-                  {i + 1}
-                </span>
-              </div>
-              <h3 className="mt-5 font-semibold text-gray-900">{step.label}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
-                {step.desc}
-              </p>
-            </div>
-          ))}
+                {/* Circle */}
+                <div className="relative z-10 flex size-24 flex-col items-center justify-center rounded-2xl bg-white shadow-lg border border-violet-100 mb-4">
+                  <span className="text-3xl mb-1">{step.emoji}</span>
+                  <span className="text-xs font-bold text-violet-400">{step.num}</span>
+                </div>
+                <h3 className="text-base font-bold text-gray-900 mb-1">{step.title}</h3>
+                <p className="text-sm text-gray-500">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

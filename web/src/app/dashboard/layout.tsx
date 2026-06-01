@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthGuard } from "@/features/auth-guard";
-import { TeacherHeader } from "@/widgets/teacher-header";
+import { TeacherSidebar } from "@/widgets/teacher-sidebar";
 
 export default function DashboardLayout({
   children,
@@ -10,9 +10,13 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
-      <div className="min-h-dvh bg-gray-50">
-        <TeacherHeader />
-        <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</main>
+      <div className="min-h-dvh bg-slate-50">
+        <TeacherSidebar />
+        <div className="lg:pl-60">
+          <main className="px-4 pt-16 pb-8 sm:px-6 lg:pt-8 max-w-6xl mx-auto">
+            {children}
+          </main>
+        </div>
       </div>
     </AuthGuard>
   );
