@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Plus, TrendingUp, Users, FileText, Target, ArrowRight, Clock } from "lucide-react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
   MOCK_TEACHER_STATS, MOCK_RECENT_ACTIVITY, MOCK_ACTIVITY_CHART, MOCK_SCORE_DISTRIBUTION,

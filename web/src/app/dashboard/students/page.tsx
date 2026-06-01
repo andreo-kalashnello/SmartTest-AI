@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Search, UserPlus, TrendingUp, TrendingDown } from "lucide-react";
 import { MOCK_STUDENTS } from "@/shared/lib/mock-data";
-import { fadeIn, stagger } from "@/shared/ui/motion";
 import { useState } from "react";
 
 export default function StudentsPage() {
