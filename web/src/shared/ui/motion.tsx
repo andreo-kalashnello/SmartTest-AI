@@ -7,13 +7,13 @@ export const fadeIn = {
   visible: (i = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.07, duration: 0.4, ease: "easeOut" },
+    transition: { delay: i * 0.07, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as [number,number,number,number] },
   }),
 };
 
 export const fadeInLeft = {
   hidden: { opacity: 0, x: -20 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as [number,number,number,number] } },
 };
 
 export const scaleIn = {
@@ -21,7 +21,7 @@ export const scaleIn = {
   visible: (i = 0) => ({
     opacity: 1,
     scale: 1,
-    transition: { delay: i * 0.06, duration: 0.35, ease: "easeOut" },
+    transition: { delay: i * 0.06, duration: 0.35, ease: [0.25, 0.1, 0.25, 1] as [number,number,number,number] },
   }),
 };
 
