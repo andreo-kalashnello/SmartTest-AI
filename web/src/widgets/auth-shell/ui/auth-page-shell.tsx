@@ -99,36 +99,42 @@ export function AuthPageShell({ mode, children }: AuthPageShellProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200/60 bg-white/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-700">
-            <Sparkles className="size-3.5" />
+          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-100">
+            <Sparkles className="size-3.5 text-violet-200" />
             Освітня платформа з ШІ
           </p>
-          <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-slate-900">
+          <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white">
             {isStudent ? (
               <>
                 Навчайся з{" "}
-                <span className="text-gradient">розумною</span> підтримкою
+                <span className="bg-gradient-to-r from-emerald-200 to-teal-200 bg-clip-text text-transparent">
+                  розумною
+                </span>{" "}
+                підтримкою
               </>
             ) : (
               <>
                 Тести за{" "}
-                <span className="text-gradient">хвилини</span>, не години
+                <span className="bg-gradient-to-r from-violet-200 via-fuchsia-200 to-indigo-200 bg-clip-text text-transparent">
+                  хвилини
+                </span>
+                , не години
               </>
             )}
           </h1>
-          <p className="mt-4 max-w-md text-lg text-slate-600">
+          <p className="mt-4 max-w-md text-lg leading-relaxed text-violet-100/90">
             {isStudent
               ? "Зареєстрований учень бачить оцінки та завдання. Або пройдіть тест без акаунта — лише PIN від вчителя."
               : "Генеруйте питання з конспекту, видавайте PIN учням і переглядайте результати в одному місці."}
           </p>
-          <ul className="mt-8 space-y-3 text-sm text-slate-600">
+          <ul className="mt-8 space-y-3 text-sm text-violet-100/85">
             {(isStudent
               ? ["Кабінет /student", "Проходження за PIN", "AI-помічник"]
               : ["AI-генерація тестів", "Журнал спроб", "Класи за кодом"]
             ).map((item) => (
-              <li key={item} className="flex items-center gap-2">
+              <li key={item} className="flex items-center gap-2.5">
                 <span
-                  className={`size-1.5 rounded-full ${isStudent ? "bg-emerald-500" : "bg-violet-500"}`}
+                  className={`size-2 shrink-0 rounded-full shadow-sm ${isStudent ? "bg-emerald-300" : "bg-violet-300"}`}
                 />
                 {item}
               </li>
