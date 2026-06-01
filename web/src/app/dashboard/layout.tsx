@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthGuard } from "@/features/auth-guard";
+import { TeacherAuthGuard } from "@/features/auth-guard";
 import { TeacherSidebar } from "@/widgets/teacher-sidebar";
 
 export default function DashboardLayout({
@@ -9,7 +9,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard>
+    <TeacherAuthGuard>
       <div className="min-h-dvh bg-slate-50">
         <TeacherSidebar />
         <div className="lg:pl-60">
@@ -18,6 +18,6 @@ export default function DashboardLayout({
           </main>
         </div>
       </div>
-    </AuthGuard>
+    </TeacherAuthGuard>
   );
 }

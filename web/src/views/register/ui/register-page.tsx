@@ -1,13 +1,28 @@
+"use client";
+
+import { Suspense } from "react";
+
 import { RegisterForm } from "@/features/auth-by-credentials";
-import { PublicHeader } from "@/widgets/public-header";
+import { AuthPageShell } from "@/widgets/auth-shell";
+
+function RegisterPageContent() {
+  return (
+    <AuthPageShell mode="register">
+      {({ role }) => <RegisterForm role={role} />}
+    </AuthPageShell>
+  );
+}
 
 export function RegisterPage() {
   return (
-    <div className="min-h-dvh bg-gray-50">
-      <PublicHeader />
-      <main className="mx-auto flex max-w-3xl justify-center px-4 py-10">
-        <RegisterForm />
-      </main>
-    </div>
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh items-center justify-center gradient-landing text-slate-500">
+          Завантаження...
+        </div>
+      }
+    >
+      <RegisterPageContent />
+    </Suspense>
   );
 }

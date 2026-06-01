@@ -8,10 +8,14 @@ export {
   clearAuthError,
   hydrateAuth,
   loginTeacher,
+  loginUser,
   logout,
   logoutTeacher,
+  logoutUser,
   registerTeacher,
+  registerUser,
   setSession,
+  updateStudentProfile,
 } from "./slices/auth-session";
 export {
   teacherTestDraftSlice,

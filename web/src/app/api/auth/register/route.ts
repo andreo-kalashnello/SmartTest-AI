@@ -5,14 +5,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validationError } from '@/shared/lib/server/api-response';
 import { hashPassword } from '@/shared/lib/server/password';
 import { prisma } from '@/shared/lib/server/prisma';
-import { registerTeacherSchema } from '@/shared/lib/server/auth-schemas';
+import { registerUserSchema } from '@/shared/lib/server/auth-schemas';
 import { setSessionCookie } from '@/shared/lib/server/session';
 import { toPublicUser } from '@/shared/lib/server/current-user';
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const parsed = registerTeacherSchema.safeParse(body);
+        const parsed = registerUserSchema.safeParse(body);
 
         if (!parsed.success) {
             return validationError(parsed.error);
@@ -28,7 +28,15 @@ export async function POST(request: NextRequest) {
         });
 
         const response = NextResponse.json(
-            { user: toPublicUser(user) },
+            {
+                user: {
+                    ...toPublicUser(user),
+                    role: parsed.data.role,
+                    grade: parsed.data.grade ?? null,
+                    classCode: parsed.data.classCode ?? null,
+                    schoolName: parsed.data.schoolName ?? null,
+                },
+            },
             { status: 201 },
         );
         setSessionCookie(response, user.id);

@@ -3,12 +3,12 @@ import { NextResponse } from 'next/server';
 
 import { unauthorized } from '@/shared/lib/server/api-response';
 import {
-    getCurrentTeacher,
+    getCurrentUser,
     toPublicUser,
 } from '@/shared/lib/server/current-user';
 
 export async function GET() {
-    const user = await getCurrentTeacher();
+    const user = await getCurrentUser();
 
     if (!user) {
         return unauthorized();

@@ -9,14 +9,17 @@ export function toPublicUser(user: { id: string; email: string; name: string }) 
   };
 }
 
-export async function getCurrentTeacher() {
+export async function getCurrentUser() {
   const userId = await getSessionUserId();
   if (!userId) return null;
 
-  const user = await prisma.user.findUnique({
+  return prisma.user.findUnique({
     where: { id: userId },
     select: { id: true, email: true, name: true },
   });
+}
 
-  return user;
+/** @deprecated використовуйте getCurrentUser */
+export async function getCurrentTeacher() {
+  return getCurrentUser();
 }

@@ -5,11 +5,15 @@ import { Provider } from "react-redux";
 
 import { AppBootstrap } from "@/app/app-bootstrap";
 import { store } from "@/shared/lib/store";
+import { AiChatWidget } from "@/widgets/ai-chat";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <Provider store={store}>
-      <AppBootstrap>{children}</AppBootstrap>
+      <AppBootstrap>
+        {children}
+        <AiChatWidget />
+      </AppBootstrap>
     </Provider>
   );
 }

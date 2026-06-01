@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, LayoutDashboard, FileText, Users, BookOpen,
-  ClipboardList, BarChart3, LogOut, Menu, X,
+  ClipboardList, BarChart3, LogOut, Menu, X, School,
 } from "lucide-react";
 import { useState } from "react";
 import { logout, logoutTeacher, useAppDispatch, useAppSelector } from "@/shared/lib/store";
@@ -14,6 +14,7 @@ const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Огляд" },
   { href: "/dashboard/tests", icon: FileText, label: "Тести" },
   { href: "/dashboard/subjects", icon: BookOpen, label: "Предмети" },
+  { href: "/dashboard/classes", icon: School, label: "Класи" },
   { href: "/dashboard/students", icon: Users, label: "Учні" },
   { href: "/dashboard/homework", icon: ClipboardList, label: "Завдання" },
   { href: "/dashboard/grades", icon: FileText, label: "Журнал оцінок" },

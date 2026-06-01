@@ -22,7 +22,11 @@
 - [x] **v1-test** *Вместо Auth.js:* credentials + httpOnly cookie `smarttest_session` ([`session.ts`](../../web/src/shared/lib/server/session.ts))
 - [x] **v1-test** Защита teacher API через `getCurrentTeacher()` → 401
 - [x] **v1-test** Сессии: httpOnly, sameSite, secure в production
-- [ ] **june-full** OAuth, роли, восстановление доступа
+- [ ] **june-full** `User.role` (TEACHER/STUDENT) в Prisma + register/me — див. [`BACKEND-TZ.md`](../backend-tz/BACKEND-TZ.md)
+- [ ] **june-full** School, Class, ClassMember, join за inviteCode
+- [ ] **june-full** `TestAttempt.studentId` для зареєстрованих учнів
+- [ ] **june-full** `POST /api/ai/chat`
+- [ ] **june-full** OAuth, восстановление доступа
 
 ---
 
