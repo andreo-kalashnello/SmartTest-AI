@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { MOCK_STUDENT_GRADES } from "@/shared/lib/mock-data";
+import { SubjectIcon } from "@/shared/ui/subject-icon";
 import { fadeIn, stagger } from "@/shared/ui/motion";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts";
 
@@ -78,7 +79,9 @@ export default function StudentGradesPage() {
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{subj.icon}</span>
+                <div className="flex size-10 items-center justify-center rounded-xl bg-slate-100">
+                  <SubjectIcon icon={subj.icon} className="size-5 text-gray-600" />
+                </div>
                 <h3 className="font-bold text-gray-900">{subj.subject}</h3>
               </div>
               <span className={`text-lg font-extrabold rounded-xl px-3 py-1 ${

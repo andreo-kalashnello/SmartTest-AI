@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Brain, LayoutDashboard, ClipboardList, Star, FileText, Menu, X } from "lucide-react";
+import { Brain, LayoutDashboard, ClipboardList, Star, FileText, Menu, X, Hash } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 
@@ -63,7 +63,8 @@ function StudentSidebarContent({ onClose }: { onClose?: () => void }) {
           href="/join"
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/20 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/30 transition-all"
         >
-          🔢 Пройти тест за PIN
+          <Hash className="size-4 shrink-0" aria-hidden />
+          Пройти тест за PIN
         </Link>
       </div>
     </div>

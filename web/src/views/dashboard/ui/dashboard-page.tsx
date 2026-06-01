@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Plus, TrendingUp, Users, FileText, Target, ArrowRight, Clock } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  Plus, TrendingUp, Users, FileText, Target, ArrowRight, Clock,
+  Bot, BookOpen, ClipboardList, BarChart3, LineChart,
+} from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -177,19 +181,19 @@ export function DashboardPage() {
         >
           <h3 className="text-base font-bold text-gray-900 mb-4">Швидкі дії</h3>
           <div className="space-y-2">
-            {[
-              { label: "Новий тест з AI", href: "/dashboard/tests/new", icon: "🤖", color: "bg-violet-50 text-violet-700 hover:bg-violet-100" },
-              { label: "Додати предмет", href: "/dashboard/subjects", icon: "📚", color: "bg-blue-50 text-blue-700 hover:bg-blue-100" },
-              { label: "Нове завдання", href: "/dashboard/homework", icon: "📝", color: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" },
-              { label: "Виставити оцінки", href: "/dashboard/grades", icon: "📊", color: "bg-amber-50 text-amber-700 hover:bg-amber-100" },
-              { label: "Аналітика", href: "/dashboard/analytics", icon: "📈", color: "bg-rose-50 text-rose-700 hover:bg-rose-100" },
-            ].map((action) => (
+            {([
+              { label: "Новий тест з AI", href: "/dashboard/tests/new", Icon: Bot, color: "bg-violet-50 text-violet-700 hover:bg-violet-100" },
+              { label: "Додати предмет", href: "/dashboard/subjects", Icon: BookOpen, color: "bg-blue-50 text-blue-700 hover:bg-blue-100" },
+              { label: "Нове завдання", href: "/dashboard/homework", Icon: ClipboardList, color: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" },
+              { label: "Виставити оцінки", href: "/dashboard/grades", Icon: BarChart3, color: "bg-amber-50 text-amber-700 hover:bg-amber-100" },
+              { label: "Аналітика", href: "/dashboard/analytics", Icon: LineChart, color: "bg-rose-50 text-rose-700 hover:bg-rose-100" },
+            ] as { label: string; href: string; Icon: LucideIcon; color: string }[]).map((action) => (
               <Link
                 key={action.href}
                 href={action.href}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${action.color}`}
               >
-                <span className="text-lg">{action.icon}</span>
+                <action.Icon className="size-5 shrink-0" aria-hidden />
                 {action.label}
                 <ArrowRight className="size-3.5 ml-auto opacity-50" />
               </Link>

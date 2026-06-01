@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Clock, CheckCircle2, AlertCircle, Calendar } from "lucide-react";
 import { MOCK_STUDENT_HOMEWORK } from "@/shared/lib/mock-data";
+import { SubjectIcon } from "@/shared/ui/subject-icon";
 import { fadeIn, stagger } from "@/shared/ui/motion";
 
 const STATUS = {
@@ -42,7 +43,9 @@ export default function StudentHomeworkPage() {
               className={`rounded-2xl border p-5 transition-all hover:shadow-sm ${cfg.colors}`}
             >
               <div className="flex items-start gap-4">
-                <span className="text-3xl shrink-0">{hw.icon}</span>
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white/60">
+                  <SubjectIcon icon={hw.icon} className="size-6 text-gray-700" />
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h3 className="font-bold text-gray-900">{hw.title}</h3>

@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plus, Filter } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Plus, Filter, FlaskConical, ClipboardList, Mic } from "lucide-react";
 import { MOCK_GRADES } from "@/shared/lib/mock-data";
 import { fadeIn, stagger } from "@/shared/ui/motion";
 
@@ -18,10 +19,10 @@ function GradeBadge({ grade }: { grade: number }) {
   );
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  test: "🧪 Тест",
-  homework: "📝 ДЗ",
-  oral: "🗣 Усне",
+const TYPE_LABELS: Record<string, { label: string; Icon: LucideIcon }> = {
+  test: { label: "Тест", Icon: FlaskConical },
+  homework: { label: "ДЗ", Icon: ClipboardList },
+  oral: { label: "Усне", Icon: Mic },
 };
 
 export default function GradesPage() {
@@ -100,7 +101,18 @@ export default function GradesPage() {
                   <span className="text-xs font-medium text-gray-600 bg-gray-100 rounded-full px-2.5 py-1">{g.subject}</span>
                 </td>
                 <td className="px-4 py-3.5 hidden md:table-cell text-gray-600 text-xs">{g.work}</td>
-                <td className="px-4 py-3.5 hidden sm:table-cell text-xs text-gray-500">{TYPE_LABELS[g.type]}</td>
+                <td className="px-4 py-3.5 hidden sm:table-cell">
+                  {(() => {
+                    const t = TYPE_LABELS[g.type];
+                    if (!t) return null;
+                    return (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                        <t.Icon className="size-3.5 shrink-0" aria-hidden />
+                        {t.label}
+                      </span>
+                    );
+                  })()}
+                </td>
                 <td className="px-4 py-3.5 hidden md:table-cell text-xs text-gray-400">{g.date}</td>
                 <td className="px-4 py-3.5 text-center">
                   <GradeBadge grade={g.grade} />

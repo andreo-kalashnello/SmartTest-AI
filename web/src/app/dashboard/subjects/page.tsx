@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Plus, Users, FileText, ClipboardList } from "lucide-react";
 import { MOCK_SUBJECTS } from "@/shared/lib/mock-data";
+import { SubjectIcon } from "@/shared/ui/subject-icon";
 import { fadeIn, stagger } from "@/shared/ui/motion";
 
 export default function SubjectsPage() {
@@ -40,8 +41,8 @@ export default function SubjectsPage() {
             <div className={`h-2 bg-gradient-to-r ${subj.color}`} />
             <div className="p-5">
               <div className="flex items-start gap-3 mb-4">
-                <div className={`flex size-12 items-center justify-center rounded-xl bg-gradient-to-br ${subj.color} text-2xl`}>
-                  {subj.icon}
+                <div className={`flex size-12 items-center justify-center rounded-xl bg-gradient-to-br ${subj.color}`}>
+                  <SubjectIcon icon={subj.icon} className="size-6 text-white" />
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 text-base">{subj.name}</h3>

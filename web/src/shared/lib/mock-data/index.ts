@@ -1,11 +1,21 @@
+import type { SubjectIconKey } from "@/shared/ui/subject-icon";
+
 // ─── Subjects ────────────────────────────────────────────────────────────────
-export const MOCK_SUBJECTS = [
-  { id: "s1", name: "Математика", icon: "📐", color: "from-violet-500 to-purple-600", students: 28, tests: 12, homework: 5 },
-  { id: "s2", name: "Фізика", icon: "⚛️", color: "from-blue-500 to-cyan-600", students: 24, tests: 8, homework: 3 },
-  { id: "s3", name: "Хімія", icon: "🧪", color: "from-emerald-500 to-teal-600", students: 22, tests: 6, homework: 2 },
-  { id: "s4", name: "Біологія", icon: "🌿", color: "from-green-500 to-emerald-600", students: 30, tests: 9, homework: 4 },
-  { id: "s5", name: "Історія", icon: "📜", color: "from-amber-500 to-orange-600", students: 26, tests: 7, homework: 3 },
-  { id: "s6", name: "Географія", icon: "🌍", color: "from-sky-500 to-blue-600", students: 25, tests: 5, homework: 2 },
+export const MOCK_SUBJECTS: {
+  id: string;
+  name: string;
+  icon: SubjectIconKey;
+  color: string;
+  students: number;
+  tests: number;
+  homework: number;
+}[] = [
+  { id: "s1", name: "Математика", icon: "math", color: "from-violet-500 to-purple-600", students: 28, tests: 12, homework: 5 },
+  { id: "s2", name: "Фізика", icon: "physics", color: "from-blue-500 to-cyan-600", students: 24, tests: 8, homework: 3 },
+  { id: "s3", name: "Хімія", icon: "chemistry", color: "from-emerald-500 to-teal-600", students: 22, tests: 6, homework: 2 },
+  { id: "s4", name: "Біологія", icon: "biology", color: "from-green-500 to-emerald-600", students: 30, tests: 9, homework: 4 },
+  { id: "s5", name: "Історія", icon: "history", color: "from-amber-500 to-orange-600", students: 26, tests: 7, homework: 3 },
+  { id: "s6", name: "Географія", icon: "geography", color: "from-sky-500 to-blue-600", students: 25, tests: 5, homework: 2 },
 ];
 
 // ─── Students ─────────────────────────────────────────────────────────────────
@@ -88,20 +98,32 @@ export const MOCK_SUBJECT_STATS = [
 ];
 
 // ─── Student data ─────────────────────────────────────────────────────────────
-export const MOCK_STUDENT_GRADES = [
-  { subject: "Математика", icon: "📐", grades: [10, 11, 9, 12, 10], avg: 10.4 },
-  { subject: "Фізика", icon: "⚛️", grades: [9, 8, 10, 9], avg: 9.0 },
-  { subject: "Хімія", icon: "🧪", grades: [11, 12, 11], avg: 11.3 },
-  { subject: "Біологія", icon: "🌿", grades: [10, 10, 11, 9], avg: 10.0 },
-  { subject: "Історія", icon: "📜", grades: [12, 11, 12], avg: 11.7 },
+export const MOCK_STUDENT_GRADES: {
+  subject: string;
+  icon: SubjectIconKey;
+  grades: number[];
+  avg: number;
+}[] = [
+  { subject: "Математика", icon: "math", grades: [10, 11, 9, 12, 10], avg: 10.4 },
+  { subject: "Фізика", icon: "physics", grades: [9, 8, 10, 9], avg: 9.0 },
+  { subject: "Хімія", icon: "chemistry", grades: [11, 12, 11], avg: 11.3 },
+  { subject: "Біологія", icon: "biology", grades: [10, 10, 11, 9], avg: 10.0 },
+  { subject: "Історія", icon: "history", grades: [12, 11, 12], avg: 11.7 },
 ];
 
-export const MOCK_STUDENT_HOMEWORK = [
-  { id: "sh1", title: "Квадратні рівняння §4.2", subject: "Математика", icon: "📐", dueDate: "2026-06-05", status: "pending" },
-  { id: "sh2", title: "Закони Ньютона — реферат", subject: "Фізика", icon: "⚛️", dueDate: "2026-06-03", status: "submitted" },
-  { id: "sh3", title: "Хімічні реакції §6", subject: "Хімія", icon: "🧪", dueDate: "2026-05-30", status: "overdue" },
-  { id: "sh4", title: "Клітинний поділ — схема", subject: "Біологія", icon: "🌿", dueDate: "2026-06-08", status: "pending" },
-  { id: "sh5", title: "Козацька доба — хронологія", subject: "Історія", icon: "📜", dueDate: "2026-05-28", status: "submitted" },
+export const MOCK_STUDENT_HOMEWORK: {
+  id: string;
+  title: string;
+  subject: string;
+  icon: SubjectIconKey;
+  dueDate: string;
+  status: string;
+}[] = [
+  { id: "sh1", title: "Квадратні рівняння §4.2", subject: "Математика", icon: "math", dueDate: "2026-06-05", status: "pending" },
+  { id: "sh2", title: "Закони Ньютона — реферат", subject: "Фізика", icon: "physics", dueDate: "2026-06-03", status: "submitted" },
+  { id: "sh3", title: "Хімічні реакції §6", subject: "Хімія", icon: "chemistry", dueDate: "2026-05-30", status: "overdue" },
+  { id: "sh4", title: "Клітинний поділ — схема", subject: "Біологія", icon: "biology", dueDate: "2026-06-08", status: "pending" },
+  { id: "sh5", title: "Козацька доба — хронологія", subject: "Історія", icon: "history", dueDate: "2026-05-28", status: "submitted" },
 ];
 
 export const MOCK_STUDENT_TESTS = [

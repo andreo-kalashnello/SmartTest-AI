@@ -3,11 +3,18 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Brain, Sparkles, Zap } from "lucide-react";
+import { SubjectIcon, type SubjectIconKey } from "@/shared/ui/subject-icon";
 
-const FLOATING_CARDS = [
-  { icon: "📐", title: "Математика", score: "12/12", color: "from-violet-500 to-purple-600", delay: 0 },
-  { icon: "⚛️", title: "Фізика", score: "9/10", color: "from-blue-500 to-cyan-600", delay: 0.4 },
-  { icon: "🧪", title: "Хімія", score: "11/12", color: "from-emerald-500 to-teal-600", delay: 0.8 },
+const FLOATING_CARDS: {
+  icon: SubjectIconKey;
+  title: string;
+  score: string;
+  color: string;
+  delay: number;
+}[] = [
+  { icon: "math", title: "Математика", score: "12/12", color: "from-violet-500 to-purple-600", delay: 0 },
+  { icon: "physics", title: "Фізика", score: "9/10", color: "from-blue-500 to-cyan-600", delay: 0.4 },
+  { icon: "chemistry", title: "Хімія", score: "11/12", color: "from-emerald-500 to-teal-600", delay: 0.8 },
 ];
 
 export function HeroSection() {
@@ -142,7 +149,7 @@ export function HeroSection() {
                     scale: { delay: card.delay + 0.3, duration: 0.5 },
                   }}
                 >
-                  <div className="text-3xl mb-2">{card.icon}</div>
+                  <SubjectIcon icon={card.icon} className="size-8 text-white mb-2" />
                   <div className="text-sm font-medium opacity-90">{card.title}</div>
                   <div className="text-xl font-bold mt-1">{card.score}</div>
                 </motion.div>

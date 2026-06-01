@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Clock, Star, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Clock, Star, CheckCircle2, Hand, ClipboardList, FlaskConical } from "lucide-react";
 import { MOCK_STUDENT_GRADES, MOCK_STUDENT_HOMEWORK, MOCK_STUDENT_TESTS } from "@/shared/lib/mock-data";
+import { SubjectIcon } from "@/shared/ui/subject-icon";
 import { fadeIn, stagger } from "@/shared/ui/motion";
 
 export default function StudentHomePage() {
@@ -22,7 +23,7 @@ export default function StudentHomePage() {
         <div className="absolute -top-6 -right-6 size-32 rounded-full bg-white/10" />
         <div className="absolute -bottom-6 right-16 size-20 rounded-full bg-white/10" />
         <div className="relative">
-          <div className="text-3xl mb-2">👋</div>
+          <Hand className="size-8 mb-2 text-white/90" aria-hidden />
           <h1 className="text-2xl font-extrabold mb-1">Привіт, Анно!</h1>
           <p className="text-emerald-100 text-sm">Клас 10-А • Сьогодні {new Date().toLocaleDateString("uk-UA", { weekday: "long", day: "numeric", month: "long" })}</p>
         </div>
@@ -64,7 +65,10 @@ export default function StudentHomePage() {
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-gray-900">📝 Домашні завдання</h3>
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              <ClipboardList className="size-5 text-emerald-600" aria-hidden />
+              Домашні завдання
+            </h3>
             <Link href="/student/homework" className="text-xs text-emerald-600 flex items-center gap-1 hover:underline">
               Всі <ArrowRight className="size-3" />
             </Link>
@@ -76,7 +80,9 @@ export default function StudentHomePage() {
                 : hw.status === "submitted" ? "bg-emerald-50 border border-emerald-100"
                 : "bg-amber-50 border border-amber-100"
               }`}>
-                <span className="text-xl">{hw.icon}</span>
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/80">
+                  <SubjectIcon icon={hw.icon} className="size-5 text-gray-700" />
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">{hw.title}</p>
                   <p className="text-xs text-gray-500">до {hw.dueDate}</p>
@@ -101,7 +107,10 @@ export default function StudentHomePage() {
           transition={{ delay: 0.25 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-gray-900">⭐ Мої оцінки</h3>
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              <Star className="size-5 text-amber-500" aria-hidden />
+              Мої оцінки
+            </h3>
             <Link href="/student/grades" className="text-xs text-emerald-600 flex items-center gap-1 hover:underline">
               Журнал <ArrowRight className="size-3" />
             </Link>
@@ -109,7 +118,9 @@ export default function StudentHomePage() {
           <div className="space-y-3">
             {MOCK_STUDENT_GRADES.map((sg) => (
               <div key={sg.subject} className="flex items-center gap-3">
-                <span className="text-xl">{sg.icon}</span>
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <SubjectIcon icon={sg.icon} className="size-5 text-gray-600" />
+                </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">{sg.subject}</p>
                   <div className="flex gap-1 mt-1">
@@ -140,7 +151,10 @@ export default function StudentHomePage() {
         transition={{ delay: 0.3 }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900">🧪 Останні тести</h3>
+          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+            <FlaskConical className="size-5 text-violet-600" aria-hidden />
+            Останні тести
+          </h3>
           <Link href="/student/tests" className="text-xs text-emerald-600 flex items-center gap-1 hover:underline">
             Всі <ArrowRight className="size-3" />
           </Link>

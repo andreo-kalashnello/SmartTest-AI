@@ -6,7 +6,8 @@ import {
   LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend,
 } from "recharts";
 import { MOCK_SUBJECT_STATS, MOCK_ACTIVITY_CHART, MOCK_SCORE_DISTRIBUTION } from "@/shared/lib/mock-data";
-import { TrendingUp } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { TrendingUp, Trophy, GraduationCap, Target, Users } from "lucide-react";
 
 const RADAR_DATA = [
   { subject: "Математика", avg: 8.7 },
@@ -16,11 +17,11 @@ const RADAR_DATA = [
   { subject: "Історія", avg: 9.4 },
 ];
 
-const TOP_STATS = [
-  { emoji: "🏆", val: "9.4", label: "Кращий предмет: Історія", color: "from-amber-400 to-orange-500" },
-  { emoji: "🎓", val: "Олена К.", label: "Найкращий учень", color: "from-violet-500 to-purple-600" },
-  { emoji: "🎯", val: "87%", label: "Успішність класу", color: "from-emerald-500 to-teal-600" },
-  { emoji: "👥", val: "155", label: "Активних учнів", color: "from-blue-500 to-cyan-600" },
+const TOP_STATS: { Icon: LucideIcon; val: string; label: string; color: string }[] = [
+  { Icon: Trophy, val: "9.4", label: "Кращий предмет: Історія", color: "from-amber-400 to-orange-500" },
+  { Icon: GraduationCap, val: "Олена К.", label: "Найкращий учень", color: "from-violet-500 to-purple-600" },
+  { Icon: Target, val: "87%", label: "Успішність класу", color: "from-emerald-500 to-teal-600" },
+  { Icon: Users, val: "155", label: "Активних учнів", color: "from-blue-500 to-cyan-600" },
 ];
 
 export default function AnalyticsPage() {
@@ -41,8 +42,8 @@ export default function AnalyticsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
           >
-            <div className={`inline-flex size-10 items-center justify-center rounded-xl bg-gradient-to-br ${card.color} mb-3 text-xl`}>
-              {card.emoji}
+            <div className={`inline-flex size-10 items-center justify-center rounded-xl bg-gradient-to-br ${card.color} mb-3`}>
+              <card.Icon className="size-5 text-white" aria-hidden />
             </div>
             <div className="text-xl font-extrabold text-gray-900">{card.val}</div>
             <div className="text-xs text-gray-500 mt-0.5">{card.label}</div>

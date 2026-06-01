@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, GraduationCap } from "lucide-react";
+import { ArrowRight, BookOpen, Check, GraduationCap } from "lucide-react";
 
 const TEACHER_ITEMS = [
   "Генерація тестів з PDF/фото за 60 секунд",
@@ -50,11 +50,13 @@ export function ForWhoSection() {
               <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-white/20 mb-5">
                 <BookOpen className="size-7" />
               </div>
-              <h3 className="text-2xl font-bold mb-4">👩‍🏫 Вчителям</h3>
+              <h3 className="text-2xl font-bold mb-4">Вчителям</h3>
               <ul className="space-y-3 mb-8">
                 {TEACHER_ITEMS.map((item) => (
                   <li key={item} className="flex items-center gap-3 text-white/90 text-sm">
-                    <span className="size-5 rounded-full bg-white/20 flex items-center justify-center text-xs">✓</span>
+                    <span className="size-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <Check className="size-3" aria-hidden />
+                    </span>
                     {item}
                   </li>
                 ))}
@@ -82,11 +84,13 @@ export function ForWhoSection() {
               <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-white/20 mb-5">
                 <GraduationCap className="size-7" />
               </div>
-              <h3 className="text-2xl font-bold mb-4">🎓 Учням</h3>
+              <h3 className="text-2xl font-bold mb-4">Учням</h3>
               <ul className="space-y-3 mb-8">
                 {STUDENT_ITEMS.map((item) => (
                   <li key={item} className="flex items-center gap-3 text-white/90 text-sm">
-                    <span className="size-5 rounded-full bg-white/20 flex items-center justify-center text-xs">✓</span>
+                    <span className="size-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <Check className="size-3" aria-hidden />
+                    </span>
                     {item}
                   </li>
                 ))}
