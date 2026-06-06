@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { Question, Test, TestId } from "@/entities/test";
+import { apiFetch } from "@/shared/api/client";
 
 type DraftStatus = "idle" | "loading" | "saving" | "succeeded" | "failed";
 
@@ -22,34 +23,15 @@ const initialState: TeacherTestDraftState = {
   error: null,
 };
 
-async function readErrorMessage(
-  response: Response,
-  fallback: string,
-): Promise<string> {
-  try {
-    const body = (await response.json()) as { message?: string };
-    return body.message ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export const loadTestDraft = createAsyncThunk(
   "teacherTestDraft/load",
   async (testId: TestId, { rejectWithValue }) => {
-    const response = await fetch(`/api/tests/${testId}`, {
-      method: "GET",
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      return rejectWithValue(
-        await readErrorMessage(response, "Test not found"),
-      );
+    try {
+      const body = await apiFetch<{ test: Test }>(`/tests/${testId}`);
+      return body.test;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Test not found");
     }
-
-    const body = (await response.json()) as { test: Test };
-    return body.test;
   },
 );
 
@@ -64,22 +46,18 @@ export const saveTestDraft = createAsyncThunk(
       return rejectWithValue("No test to save");
     }
 
-    const response = await fetch(`/api/tests/${teacherTestDraft.testId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        title: teacherTestDraft.title,
-        questions: teacherTestDraft.questions,
-      }),
-    });
-
-    if (!response.ok) {
-      return rejectWithValue(await readErrorMessage(response, "Save failed"));
+    try {
+      const body = await apiFetch<{ test: Test }>(`/tests/${teacherTestDraft.testId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          title: teacherTestDraft.title,
+          questions: teacherTestDraft.questions,
+        }),
+      });
+      return body.test;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Save failed");
     }
-
-    const body = (await response.json()) as { test: Test };
-    return body.test;
   },
 );
 

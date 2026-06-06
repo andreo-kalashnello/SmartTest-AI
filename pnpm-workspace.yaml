@@ -1,5 +1,6 @@
 packages:
   - "web"
+  - "api"
 
 # pnpm 11+: allow postinstall scripts (Prisma, Next/sharp, esbuild)
 allowBuilds:

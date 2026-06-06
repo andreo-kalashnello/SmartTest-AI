@@ -3,9 +3,11 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter api dev",
     "build": "pnpm --filter web build",
+    "build:api": "pnpm --filter api build",
     "lint": "pnpm --filter web lint",
-    "prisma:generate": "pnpm --filter web prisma:generate",
-    "prisma:deploy": "pnpm --filter web prisma:deploy"
+    "prisma:generate": "pnpm --filter api prisma:generate",
+    "prisma:deploy": "pnpm --filter api prisma:deploy"
   }
 }

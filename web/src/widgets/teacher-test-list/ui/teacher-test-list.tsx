@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ClipboardCopy, Pencil, Users } from "lucide-react";
 
 import type { Test } from "@/entities/test";
+import { apiFetch } from "@/shared/api/client";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -16,18 +17,12 @@ export function TeacherTestList() {
     let alive = true;
 
     async function loadTests() {
-      const response = await fetch("/api/tests", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
+      try {
+        const body = await apiFetch<{ tests: Test[] }>("/tests");
+        if (alive) setTests(body.tests);
+      } catch {
         if (alive) setTests([]);
-        return;
       }
-
-      const body = (await response.json()) as { tests: Test[] };
-      if (alive) setTests(body.tests);
     }
 
     void loadTests();

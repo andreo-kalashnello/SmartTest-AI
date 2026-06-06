@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum Role {
+  TEACHER
+  STUDENT
+}
+
+enum AiJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(TEACHER)
+  grade        String?
+  schoolName   String?
+  tests        Test[]
+  sessions     Session[]
+  attempts     TestAttempt[]
+  aiJobs       AiJob[]
+  teachingClasses Class[]       @relation("ClassTeacher")
+  classMemberships ClassMember[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  classes   Class[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Class {
+  id         String        @id @default(cuid())
+  name       String
+  inviteCode String        @unique
+  teacherId  String
+  teacher    User          @relation("ClassTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  schoolId   String?
+  school     School?       @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  members    ClassMember[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([teacherId])
+  @@index([inviteCode])
+  @@index([schoolId])
+}
+
+model ClassMember {
+  id        String   @id @default(cuid())
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @default(STUDENT)
+  joinedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([classId, userId])
+  @@index([userId])
+}
+
+model AiJob {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  status    AiJobStatus @default(PENDING)
+  input     Json
+  result    Json?
+  error     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Session {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+}
+
+model Test {
+  id        String        @id @default(cuid())
+  title     String
+  pin       String        @unique
+  teacherId String
+  teacher   User          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  questions Question[]
+  attempts  TestAttempt[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([teacherId])
+  @@index([pin])
+}
+
+model Question {
+  id        String           @id @default(cuid())
+  prompt    String
+  order     Int
+  testId    String
+  test      Test             @relation(fields: [testId], references: [id], onDelete: Cascade)
+  options   QuestionOption[]
+  answers   Answer[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([testId])
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  text       String
+  isCorrect  Boolean  @default(false)
+  order      Int
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers    Answer[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([questionId])
+}
+
+model TestAttempt {
+  id          String        @id @default(cuid())
+  testId      String
+  test        Test          @relation(fields: [testId], references: [id], onDelete: Cascade)
+  studentId   String?
+  student     User?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  studentName String
+  status      AttemptStatus @default(IN_PROGRESS)
+  score       Int           @default(0)
+  total       Int           @default(0)
+  answers     Answer[]
+  startedAt   DateTime      @default(now())
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([testId])
+  @@index([studentId])
+}
+
+model Answer {
+  id               String         @id @default(cuid())
+  attemptId        String
+  attempt          TestAttempt    @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptionId String
+  selectedOption   QuestionOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
+  isCorrect        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+  @@index([selectedOptionId])
+}

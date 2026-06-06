@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import type { Test, TestAttempt } from "@/entities/test";
+import { apiFetch } from "@/shared/api/client";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
@@ -21,27 +22,17 @@ export function TestAttemptsPage() {
     let alive = true;
 
     async function loadAttempts() {
-      const response = await fetch(`/api/tests/${id}/attempts`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
+      try {
+        const body = await apiFetch<{ test: Test; attempts: TestAttempt[] }>(`/tests/${id}/attempts`);
+        if (alive) {
+          setTest(body.test);
+          setAttempts(body.attempts);
+        }
+      } catch {
         if (alive) {
           setTest(null);
           setAttempts([]);
         }
-        return;
-      }
-
-      const body = (await response.json()) as {
-        test: Test;
-        attempts: TestAttempt[];
-      };
-
-      if (alive) {
-        setTest(body.test);
-        setAttempts(body.attempts);
       }
     }
 

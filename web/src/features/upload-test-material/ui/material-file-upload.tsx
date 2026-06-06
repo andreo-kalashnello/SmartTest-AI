@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 
 import type { ScannedSource, ScannedSourceDraft } from "../model/types";
+import { waitForAiJob } from "@/shared/api/ai-jobs";
+import { apiFetch } from "@/shared/api/client";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 
@@ -28,21 +30,15 @@ async function scanFile(file: File): Promise<{ fileName: string; text: string }>
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch("/api/ai/extract-material", {
+  const { job } = await apiFetch<{ job: { id: string } }>("/ai/jobs/extract-material", {
     method: "POST",
-    credentials: "include",
     body: formData,
   });
 
-  const body = (await response.json()) as {
-    message?: string;
+  const body = await waitForAiJob<{
     text?: string;
     fileName?: string;
-  };
-
-  if (!response.ok) {
-    throw new Error(body.message ?? "Не вдалося відсканувати файл");
-  }
+  }>(job.id);
 
   const text = body.text?.trim() ?? "";
   if (!text) {

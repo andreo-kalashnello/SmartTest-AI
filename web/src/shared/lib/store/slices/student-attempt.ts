@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { QuestionId, Test, TestAttempt } from "@/entities/test";
+import { apiFetch } from "@/shared/api/client";
 
 type AttemptPhase = "idle" | "joining" | "playing" | "submitting" | "done";
 
@@ -52,43 +53,24 @@ function normalizePlayerTest(test: PlayerTest): Test {
   };
 }
 
-async function readErrorMessage(
-  response: Response,
-  fallback: string,
-): Promise<string> {
-  try {
-    const body = (await response.json()) as { message?: string };
-    return body.message ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export const joinTestByPin = createAsyncThunk(
   "studentAttempt/join",
   async (
     data: { pin: string; studentName: string },
     { rejectWithValue },
   ) => {
-    const response = await fetch("/api/public/attempts/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pin: data.pin.trim(),
-        studentName: data.studentName.trim(),
-      }),
-    });
-
-    if (!response.ok) {
-      return rejectWithValue(
-        await readErrorMessage(response, "Test with this PIN was not found"),
-      );
+    let body: { attemptId: string; test: PlayerTest };
+    try {
+      body = await apiFetch<{ attemptId: string; test: PlayerTest }>("/public/attempts/start", {
+        method: "POST",
+        body: JSON.stringify({
+          pin: data.pin.trim(),
+          studentName: data.studentName.trim(),
+        }),
+      });
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Test with this PIN was not found");
     }
-
-    const body = (await response.json()) as {
-      attemptId: string;
-      test: PlayerTest;
-    };
 
     return {
       attemptId: body.attemptId,
@@ -116,33 +98,18 @@ export const submitAttempt = createAsyncThunk(
       optionId,
     }));
 
-    const saveResponse = await fetch(`/api/public/attempts/${attemptId}/answers`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers: answerItems }),
-    });
-
-    if (!saveResponse.ok) {
-      return rejectWithValue(
-        await readErrorMessage(saveResponse, "Answer save failed"),
-      );
-    }
-
-    const completeResponse = await fetch(
-      `/api/public/attempts/${attemptId}/complete`,
-      {
+    try {
+      await apiFetch(`/public/attempts/${attemptId}/answers`, {
+        method: "PATCH",
+        body: JSON.stringify({ answers: answerItems }),
+      });
+      const body = await apiFetch<{ result: TestAttempt }>(`/public/attempts/${attemptId}/complete`, {
         method: "POST",
-      },
-    );
-
-    if (!completeResponse.ok) {
-      return rejectWithValue(
-        await readErrorMessage(completeResponse, "Attempt submit failed"),
-      );
+      });
+      return body.result;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Attempt submit failed");
     }
-
-    const body = (await completeResponse.json()) as { result: TestAttempt };
-    return body.result;
   },
 );
 

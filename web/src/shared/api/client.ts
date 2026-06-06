@@ -14,24 +14,31 @@ export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
 ): Promise<T> {
-  const base = publicConfig.apiBaseUrl.replace(/\/$/, "");
-  if (!base) {
-    throw new ApiError(
-      "API URL не налаштовано (NEXT_PUBLIC_API_URL). Потрібен бек.",
-      503,
-      "NO_API_URL",
-    );
-  }
+  return request<T>(path, options, true);
+}
+
+async function request<T>(
+  path: string,
+  options: ApiFetchOptions,
+  canRefresh: boolean,
+): Promise<T> {
+  const base = (publicConfig.apiBaseUrl || "http://localhost:4000/api").replace(/\/$/, "");
 
   const { token, onUnauthorized, method, ...init } = options;
   const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+  const isFormData = init.body instanceof FormData;
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(init.headers as Record<string, string>),
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(url, { ...init, method, headers });
+  const res = await fetch(url, { ...init, method, headers, credentials: "include" });
+
+  if (res.status === 401 && canRefresh && path !== "/auth/refresh") {
+    const refreshed = await refreshSession(base);
+    if (refreshed) return request<T>(path, options, false);
+  }
 
   if (res.status === 401 || res.status === 403) {
     onUnauthorized?.();
@@ -54,4 +61,13 @@ export async function apiFetch<T>(
 
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
+}
+
+async function refreshSession(base: string) {
+  const res = await fetch(`${base}/auth/refresh`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  return res.ok;
 }

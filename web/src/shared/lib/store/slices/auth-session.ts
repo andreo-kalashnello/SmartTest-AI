@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { AuthSession, UserRole } from "@/entities/auth";
+import { apiFetch } from "@/shared/api/client";
 import {
   loadAuthProfile,
   mergeSessionWithProfile,
@@ -70,44 +71,21 @@ function persistProfile(userId: string, data: RegisterPayload) {
   });
 }
 
-async function readErrorMessage(
-  response: Response,
-  fallback: string,
-): Promise<string> {
-  try {
-    const body = (await response.json()) as { message?: string };
-    return body.message ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export const hydrateAuth = createAsyncThunk("authSession/hydrate", async () => {
-  const response = await fetch("/api/auth/me", {
-    method: "GET",
-    credentials: "include",
-  });
-
-  if (response.status === 401) {
+  try {
+    const body = await apiFetch<{ user: AuthApiUser }>("/auth/me");
+    return buildSession(body.user);
+  } catch {
     return null;
   }
-
-  if (!response.ok) {
-    throw new Error(await readErrorMessage(response, "Session check failed"));
-  }
-
-  const body = (await response.json()) as { user: AuthApiUser };
-  return buildSession(body.user);
 });
 
 export const registerUser = createAsyncThunk(
   "authSession/register",
   async (data: RegisterPayload, { rejectWithValue }) => {
     try {
-      const response = await fetch("/api/auth/register", {
+      const body = await apiFetch<{ user: AuthApiUser }>("/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           name: data.name,
           email: data.email,
@@ -118,14 +96,6 @@ export const registerUser = createAsyncThunk(
           schoolName: data.schoolName,
         }),
       });
-
-      if (!response.ok) {
-        return rejectWithValue(
-          await readErrorMessage(response, "Registration failed"),
-        );
-      }
-
-      const body = (await response.json()) as { user: AuthApiUser };
       persistProfile(body.user.id, data);
       return buildSession(body.user);
     } catch (error) {
@@ -143,18 +113,10 @@ export const loginUser = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const body = await apiFetch<{ user: AuthApiUser }>("/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        return rejectWithValue(await readErrorMessage(response, "Login failed"));
-      }
-
-      const body = (await response.json()) as { user: AuthApiUser };
       return buildSession(body.user);
     } catch (error) {
       return rejectWithValue(
@@ -165,13 +127,11 @@ export const loginUser = createAsyncThunk(
 );
 
 export const logoutUser = createAsyncThunk("authSession/logout", async () => {
-  await fetch("/api/auth/logout", {
+  await apiFetch("/auth/logout", {
     method: "POST",
-    credentials: "include",
   });
 });
 
-/** Оновити профіль учня (клас/школа) — поки лише localStorage */
 export const updateStudentProfile = createAsyncThunk(
   "authSession/updateStudentProfile",
   async (
@@ -251,9 +211,6 @@ export const authSessionSlice = createSlice({
 
 export const { logout, clearAuthError, setSession } = authSessionSlice.actions;
 
-/** @deprecated */
 export const registerTeacher = registerUser;
-/** @deprecated */
 export const loginTeacher = loginUser;
-/** @deprecated */
 export const logoutTeacher = logoutUser;

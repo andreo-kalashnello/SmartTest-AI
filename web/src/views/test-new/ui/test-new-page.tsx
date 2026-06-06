@@ -11,6 +11,9 @@ import {
   MaterialFileUpload,
   type ScannedSource,
 } from "@/features/upload-test-material";
+import { publicConfig } from "@/shared/config";
+import { waitForAiJob } from "@/shared/api/ai-jobs";
+import { apiFetch } from "@/shared/api/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -95,7 +98,7 @@ export function TestNewPage() {
 
   const onManualSubmit = manualForm.handleSubmit(async ({ title }) => {
     setManualError(null);
-    const response = await fetch("/api/tests", {
+    const response = await fetch(`${publicConfig.apiBaseUrl}/tests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -120,10 +123,9 @@ export function TestNewPage() {
       return;
     }
 
-    const response = await fetch("/api/ai/create-test", {
+    try {
+      const { job } = await apiFetch<{ job: { id: string } }>("/ai/jobs/create-test", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({
         title: values.title,
         topic: values.topic,
@@ -132,15 +134,17 @@ export function TestNewPage() {
         language: values.language,
         sourceText,
       }),
-    });
+      });
 
-    if (!response.ok) {
-      setAiError(await readErrorMessage(response, "Не вдалося створити тест з ШІ"));
-      return;
+      const body = await waitForAiJob<{ test: Test }>(job.id);
+      router.push(`/dashboard/tests/${body.test.id}/edit`);
+    } catch (error) {
+      setAiError(
+        error instanceof Error
+          ? error.message
+          : "Не вдалося створити тест з ШІ",
+      );
     }
-
-    const body = (await response.json()) as { test: Test };
-    router.push(`/dashboard/tests/${body.test.id}/edit`);
   });
 
   return (
