@@ -29,12 +29,12 @@ import { createAiTestSchema, CreateAiTestDto } from './dto/create-ai-test.dto';
 @Controller('ai')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.TEACHER)
-@Throttle({ default: { limit: 15, ttl: 60_000 } })
 export class AiController {
     constructor(private readonly aiQueue: AiQueueService) {}
 
     @Post('jobs/create-test')
     @HttpCode(202)
+    @Throttle({ default: { limit: 10, ttl: 60_000 } })
     createTestJob(
         @CurrentUser() user: CurrentUserPayload,
         @Body(new ZodValidationPipe(createAiTestSchema)) body: CreateAiTestDto,
@@ -44,6 +44,7 @@ export class AiController {
 
     @Post('jobs/extract-material')
     @HttpCode(202)
+    @Throttle({ default: { limit: 10, ttl: 60_000 } })
     @UseInterceptors(FileInterceptor('file'))
     extractMaterialJob(
         @CurrentUser() user: CurrentUserPayload,

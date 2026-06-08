@@ -1,16 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Clock, CheckCircle2, AlertCircle, Calendar } from "lucide-react";
-import { MOCK_STUDENT_HOMEWORK } from "@/shared/lib/mock-data";
-import { SubjectIcon } from "@/shared/ui/subject-icon";
-import { fadeIn, stagger } from "@/shared/ui/motion";
-
-const STATUS = {
-  pending: { label: "Очікує здачі", icon: Clock, colors: "bg-amber-50 border-amber-100 text-amber-700" },
-  submitted: { label: "Здано", icon: CheckCircle2, colors: "bg-emerald-50 border-emerald-100 text-emerald-700" },
-  overdue: { label: "Прострочено", icon: AlertCircle, colors: "bg-rose-50 border-rose-100 text-rose-700" },
-};
+import { ClipboardList, AlertCircle } from "lucide-react";
 
 export default function StudentHomeworkPage() {
   return (
@@ -20,55 +12,31 @@ export default function StudentHomeworkPage() {
         <p className="text-sm text-gray-500">Ваші поточні та минулі завдання</p>
       </motion.div>
 
-      {/* Filter pills */}
-      <div className="flex gap-2 flex-wrap">
-        {["Всі", "Очікують", "Здано", "Прострочено"].map((f) => (
-          <button
-            key={f}
-            className="rounded-full bg-white border border-gray-200 px-4 py-1.5 text-sm font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 transition-all"
-          >
-            {f}
-          </button>
-        ))}
-      </div>
+      <motion.div
+        className="rounded-2xl border border-amber-100 bg-amber-50/80 px-5 py-4 text-sm text-amber-900 flex gap-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <AlertCircle className="size-5 shrink-0 mt-0.5" />
+        <p>
+          API домашніх завдань для учня ще не підключений на бекенді. Мокові дані прибрано.
+        </p>
+      </motion.div>
 
-      <motion.div className="space-y-4" variants={stagger} initial="hidden" animate="visible">
-        {MOCK_STUDENT_HOMEWORK.map((hw, i) => {
-          const cfg = STATUS[hw.status as keyof typeof STATUS];
-          return (
-            <motion.div
-              key={hw.id}
-              variants={fadeIn}
-              custom={i}
-              className={`rounded-2xl border p-5 transition-all hover:shadow-sm ${cfg.colors}`}
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white/60">
-                  <SubjectIcon icon={hw.icon} className="size-6 text-gray-700" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <h3 className="font-bold text-gray-900">{hw.title}</h3>
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cfg.colors}`}>
-                      <cfg.icon className="size-3" />
-                      {cfg.label}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600 mb-3">{hw.subject}</p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Calendar className="size-3.5" />
-                    Здати до: <strong>{hw.dueDate}</strong>
-                  </div>
-                </div>
-                {hw.status === "pending" && (
-                  <button className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-all shadow-sm">
-                    Здати
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
+      <motion.div
+        className="rounded-2xl border border-dashed border-gray-200 py-20 text-center text-gray-400"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <ClipboardList className="mx-auto mb-3 size-12 opacity-30" />
+        <p className="font-medium text-gray-600">Завдань поки немає</p>
+        <p className="text-sm mt-2 max-w-md mx-auto">
+          Поки що проходьте тести на{" "}
+          <Link href="/join" className="text-emerald-600 hover:underline">
+            /join
+          </Link>
+        </p>
       </motion.div>
     </div>
   );

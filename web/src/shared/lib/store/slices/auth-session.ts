@@ -2,11 +2,6 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 
 import type { AuthSession, UserRole } from "@/entities/auth";
 import { apiFetch } from "@/shared/api/client";
-import {
-  loadAuthProfile,
-  mergeSessionWithProfile,
-  saveAuthProfile,
-} from "@/shared/lib/client/auth-profile";
 
 type AuthStatus = "idle" | "loading" | "succeeded" | "failed";
 
@@ -17,13 +12,14 @@ interface AuthSessionState {
   hydrated: boolean;
 }
 
+// NestJS response shape from /auth/register, /auth/login, /auth/me
 type AuthApiUser = {
   id: string;
   email: string;
   name: string;
   role?: "TEACHER" | "STUDENT";
+  // register/login return these; me() currently does not (backend note)
   grade?: string | null;
-  classCode?: string | null;
   schoolName?: string | null;
 };
 
@@ -44,31 +40,20 @@ const initialState: AuthSessionState = {
   hydrated: false,
 };
 
-function apiRoleToClient(role?: "TEACHER" | "STUDENT"): UserRole | undefined {
-  if (role === "TEACHER") return "teacher";
-  if (role === "STUDENT") return "student";
-  return undefined;
+function apiRoleToClient(role?: "TEACHER" | "STUDENT"): UserRole {
+  return role === "STUDENT" ? "student" : "teacher";
 }
 
+/** Build Redux AuthSession directly from NestJS API response — no localStorage. */
 function buildSession(user: AuthApiUser): AuthSession {
-  const clientRole = apiRoleToClient(user.role);
-  const session = mergeSessionWithProfile(
-    { id: user.id, email: user.email, name: user.name },
-    clientRole,
-  );
-  if (user.grade) session.grade = user.grade;
-  if (user.classCode) session.classCode = user.classCode;
-  if (user.schoolName) session.schoolName = user.schoolName;
-  return session;
-}
-
-function persistProfile(userId: string, data: RegisterPayload) {
-  saveAuthProfile(userId, {
-    role: data.role,
-    grade: data.grade,
-    classCode: data.classCode || undefined,
-    schoolName: data.schoolName,
-  });
+  return {
+    userId: user.id,
+    email: user.email,
+    name: user.name,
+    role: apiRoleToClient(user.role),
+    grade: user.grade ?? undefined,
+    schoolName: user.schoolName ?? undefined,
+  };
 }
 
 export const hydrateAuth = createAsyncThunk("authSession/hydrate", async () => {
@@ -91,12 +76,11 @@ export const registerUser = createAsyncThunk(
           email: data.email,
           password: data.password,
           role: data.role === "student" ? "STUDENT" : "TEACHER",
-          grade: data.grade,
+          grade: data.grade || undefined,
           classCode: data.classCode || undefined,
-          schoolName: data.schoolName,
+          schoolName: data.schoolName || undefined,
         }),
       });
-      persistProfile(body.user.id, data);
       return buildSession(body.user);
     } catch (error) {
       return rejectWithValue(
@@ -108,10 +92,7 @@ export const registerUser = createAsyncThunk(
 
 export const loginUser = createAsyncThunk(
   "authSession/login",
-  async (
-    data: { email: string; password: string },
-    { rejectWithValue },
-  ) => {
+  async (data: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const body = await apiFetch<{ user: AuthApiUser }>("/auth/login", {
         method: "POST",
@@ -127,22 +108,23 @@ export const loginUser = createAsyncThunk(
 );
 
 export const logoutUser = createAsyncThunk("authSession/logout", async () => {
-  await apiFetch("/auth/logout", {
-    method: "POST",
-  });
+  await apiFetch("/auth/logout", { method: "POST" });
 });
 
+/**
+ * Update student profile fields in Redux only.
+ * grade/schoolName: no PATCH endpoint in backend yet — local state only.
+ * classCode join: use POST /classes/join separately (student-settings-page).
+ */
 export const updateStudentProfile = createAsyncThunk(
   "authSession/updateStudentProfile",
   async (
-    data: { grade?: string; classCode?: string; schoolName?: string },
+    data: { grade?: string; schoolName?: string },
     { getState },
   ) => {
     const state = getState() as { authSession: AuthSessionState };
     const user = state.authSession.user;
     if (!user) throw new Error("Not authenticated");
-    const stored = loadAuthProfile(user.userId) ?? { role: user.role };
-    saveAuthProfile(user.userId, { ...stored, ...data });
     return { ...user, ...data };
   },
 );
@@ -211,6 +193,9 @@ export const authSessionSlice = createSlice({
 
 export const { logout, clearAuthError, setSession } = authSessionSlice.actions;
 
+/** @deprecated use registerUser */
 export const registerTeacher = registerUser;
+/** @deprecated use loginUser */
 export const loginTeacher = loginUser;
+/** @deprecated use logoutUser */
 export const logoutTeacher = logoutUser;

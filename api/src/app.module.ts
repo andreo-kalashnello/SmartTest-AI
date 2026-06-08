@@ -14,6 +14,7 @@ import { MetricsInterceptor } from './metrics/metrics.interceptor';
 import { MetricsModule } from './metrics/metrics.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StudentModule } from './student/student.module';
+// import { TeacherModule } from './teacher/teacher.module';
 import { TestsModule } from './tests/tests.module';
 
 @Module({
@@ -60,6 +61,7 @@ import { TestsModule } from './tests/tests.module';
     AuthModule,
     ClassesModule,
     StudentModule,
+    // TeacherModule,
     TestsModule,
     AttemptsModule,
     AiModule,
