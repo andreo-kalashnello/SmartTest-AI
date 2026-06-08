@@ -38,8 +38,103 @@ model User {
   aiJobs       AiJob[]
   teachingClasses Class[]       @relation("ClassTeacher")
   classMemberships ClassMember[]
+  subjects     Subject[]        @relation("TeacherSubjects")
+  subjectEnrollments Enrollment[] @relation("SubjectEnrollments")
+  homework     Homework[]       @relation("TeacherHomework")
+  homeworkSubmissions HomeworkSubmit[] @relation("HomeworkSubmissions")
+  gradesGiven  Grade[]          @relation("TeacherGrades")
+  gradesReceived Grade[]        @relation("StudentGrades")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Subject {
+  id          String       @id @default(cuid())
+  teacherId   String
+  teacher     User         @relation("TeacherSubjects", fields: [teacherId], references: [id], onDelete: Cascade)
+  name        String
+  icon        String?
+  enrollments Enrollment[]
+  homework    Homework[]
+  grades      Grade[]
+  tests       Test[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([teacherId])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User     @relation("SubjectEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([subjectId, studentId])
+  @@index([studentId])
+}
+
+model Homework {
+  id          String           @id @default(cuid())
+  teacherId   String
+  teacher     User             @relation("TeacherHomework", fields: [teacherId], references: [id], onDelete: Cascade)
+  subjectId   String
+  subject     Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  dueAt       DateTime?
+  attachmentName String?
+  attachmentMimeType String?
+  attachmentSize Int?
+  attachmentData Bytes?
+  submissions HomeworkSubmit[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([teacherId])
+  @@index([subjectId])
+}
+
+model HomeworkSubmit {
+  id          String   @id @default(cuid())
+  homeworkId  String
+  homework    Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     User     @relation("HomeworkSubmissions", fields: [studentId], references: [id], onDelete: Cascade)
+  content     String?
+  attachmentName String?
+  attachmentMimeType String?
+  attachmentSize Int?
+  attachmentData Bytes?
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([homeworkId, studentId])
+  @@index([studentId])
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  studentId String
+  student   User     @relation("StudentGrades", fields: [studentId], references: [id], onDelete: Cascade)
+  teacherId String
+  teacher   User     @relation("TeacherGrades", fields: [teacherId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  value     Int
+  type      String
+  workTitle String
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([teacherId])
+  @@index([subjectId])
 }
 
 model School {
@@ -119,6 +214,8 @@ model Test {
   pin       String        @unique
   teacherId String
   teacher   User          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subjectId String?
+  subject   Subject?      @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   questions Question[]
   attempts  TestAttempt[]
   createdAt DateTime      @default(now())
@@ -126,6 +223,7 @@ model Test {
 
   @@index([teacherId])
   @@index([pin])
+  @@index([subjectId])
 }
 
 model Question {

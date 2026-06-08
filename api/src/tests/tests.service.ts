@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SubjectsService } from '../subjects/subjects.service';
 import { CurrentUserPayload } from '../auth/current-user.decorator';
 import { MAX_PIN_CREATE_ATTEMPTS, assertCanRetryPin, isPinUniqueConflict } from './pin-conflict';
 import { PinService } from './pin.service';
@@ -11,6 +12,7 @@ export class TestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pins: PinService,
+    private readonly subjects: SubjectsService,
   ) {}
 
   async list(user: CurrentUserPayload) {
@@ -23,11 +25,13 @@ export class TestsService {
   }
 
   async create(user: CurrentUserPayload, dto: TestInputDto) {
+    if (dto.subjectId) await this.subjects.ensureTeacherOwnsSubject(user.id, dto.subjectId);
     for (let attempt = 0; attempt < MAX_PIN_CREATE_ATTEMPTS; attempt += 1) {
       try {
         const test = await this.prisma.test.create({
           data: {
             title: dto.title,
+            subjectId: dto.subjectId ?? null,
             pin: this.pins.generatePin(),
             teacherId: user.id,
             questions: this.nestedQuestions(dto),
@@ -50,12 +54,14 @@ export class TestsService {
 
   async update(user: CurrentUserPayload, id: string, dto: TestInputDto) {
     await this.ensureOwned(user.id, id);
+    if (dto.subjectId) await this.subjects.ensureTeacherOwnsSubject(user.id, dto.subjectId);
     const test = await this.prisma.$transaction(async (tx) => {
       await tx.question.deleteMany({ where: { testId: id } });
       return tx.test.update({
         where: { id },
         data: {
           title: dto.title,
+          subjectId: dto.subjectId ?? null,
           questions: this.nestedQuestions(dto),
         },
         include: testInclude,

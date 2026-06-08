@@ -444,6 +444,390 @@ For guest attempts:
 }
 ```
 
+## Subjects
+
+Phase C added subjects, enrollments, homework, grades and analytics.
+
+Subject endpoints:
+
+```http
+GET    /subjects
+POST   /subjects
+PUT    /subjects/:id
+DELETE /subjects/:id
+POST   /subjects/:id/enroll
+DELETE /subjects/:id/enroll
+GET    /subjects/:id/students
+```
+
+Teacher:
+
+- `GET /subjects` returns teacher subjects.
+- `POST /subjects` creates subject.
+- `PUT /subjects/:id` updates teacher-owned subject.
+- `DELETE /subjects/:id` deletes teacher-owned subject.
+- `GET /subjects/:id/students` returns enrolled students.
+
+Student:
+
+- `GET /subjects` returns enrolled subjects.
+- `POST /subjects/:id/enroll` enrolls current student.
+- `DELETE /subjects/:id/enroll` unenrolls current student.
+
+Create/update body:
+
+```json
+{
+  "name": "Mathematics",
+  "icon": "calculator"
+}
+```
+
+Response shape:
+
+```json
+{
+  "subject": {
+    "id": "...",
+    "teacherId": "...",
+    "name": "Mathematics",
+    "icon": "calculator",
+    "studentCount": 1,
+    "homeworkCount": 0,
+    "testCount": 0,
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}
+```
+
+Tests can optionally be linked to subject:
+
+```json
+{
+  "title": "Algebra test",
+  "subjectId": "...",
+  "questions": []
+}
+```
+
+## Homework
+
+Homework endpoints:
+
+```http
+GET    /homework
+POST   /homework
+PUT    /homework/:id
+DELETE /homework/:id
+POST   /homework/:id/attachment
+GET    /homework/:id/attachment
+DELETE /homework/:id/attachment
+GET    /homework/student
+POST   /homework/:id/submit
+GET    /homework/:id/submissions
+GET    /homework/:id/submissions/:submissionId/attachment
+```
+
+Teacher:
+
+- `GET /homework` returns teacher homework.
+- `POST /homework` creates homework for teacher-owned subject.
+- `PUT /homework/:id` updates teacher-owned homework.
+- `DELETE /homework/:id` deletes teacher-owned homework.
+- `POST /homework/:id/attachment` uploads/replaces one teacher attachment.
+- `DELETE /homework/:id/attachment` removes teacher attachment.
+- `GET /homework/:id/submissions` returns student submissions.
+
+Student:
+
+- `GET /homework/student` returns homework from enrolled subjects.
+- `GET /homework/:id/attachment` downloads teacher attachment if student is enrolled.
+- `POST /homework/:id/submit` creates or updates own submission, optionally with file.
+- `GET /homework/:id/submissions/:submissionId/attachment` downloads own submission file. Teacher can download any submission file for owned homework.
+
+Create/update body:
+
+```json
+{
+  "subjectId": "...",
+  "title": "Read chapter 1",
+  "description": "Solve exercises 1-5",
+  "dueAt": "2026-06-20T18:00:00.000Z"
+}
+```
+
+Submit body:
+
+JSON without file:
+
+```json
+{
+  "content": "My answer text or link"
+}
+```
+
+Multipart with file:
+
+```txt
+Content-Type: multipart/form-data
+
+content = My answer text
+file    = answer.pdf
+```
+
+Teacher homework attachment upload:
+
+```txt
+POST /homework/:id/attachment
+Content-Type: multipart/form-data
+
+file = task.pdf
+```
+
+Important:
+
+- Student can submit homework only if enrolled in homework subject.
+- Re-submitting updates previous submission.
+- If re-submitting without `file`, existing submission file is kept.
+- Allowed attachment formats: PDF, DOC, DOCX, TXT, JPG, PNG, WEBP.
+- Default max attachment size: 5MB (`HOMEWORK_UPLOAD_MAX_BYTES`).
+- Attachments are stored in Postgres as protected binary data for now.
+
+## Grades
+
+Grade endpoints:
+
+```http
+GET    /grades
+POST   /grades
+PUT    /grades/:id
+DELETE /grades/:id
+GET    /grades/my
+```
+
+Teacher:
+
+- `GET /grades` returns teacher-created grades.
+- `POST /grades` creates grade.
+- `PUT /grades/:id` updates teacher-owned grade.
+- `DELETE /grades/:id` deletes teacher-owned grade.
+
+Student:
+
+- `GET /grades/my` returns current student's grades.
+
+Create/update body:
+
+```json
+{
+  "studentId": "...",
+  "subjectId": "...",
+  "value": 10,
+  "type": "homework",
+  "workTitle": "Chapter 1 homework",
+  "date": "2026-06-20T18:00:00.000Z"
+}
+```
+
+Important:
+
+- `value` is integer from 1 to 12.
+- Teacher can grade only inside own subject.
+- Student must be enrolled in that subject.
+
+## Analytics
+
+Analytics endpoints:
+
+```http
+GET /analytics/teacher
+GET /analytics/student
+GET /analytics/subject/:id
+```
+
+Teacher analytics now returns old summary fields plus UI-ready blocks for the analytics page.
+
+Teacher response:
+
+```txt
+summary
+cards
+weeklyActivity
+subjectAverages
+knowledgeRadar
+gradeDistribution
+subjects
+```
+
+`summary` still includes:
+
+```txt
+subjectsCount
+homeworkCount
+gradesCount
+averageGrade
+testsCount
+attemptsCount
+studentsCount
+subjects[]
+bestSubject
+bestStudent
+classSuccessPercent
+```
+
+`cards` is for the top teacher dashboard cards:
+
+```json
+{
+  "bestSubject": {
+    "value": 9.4,
+    "label": "Кращий предмет: Історія",
+    "subject": {}
+  },
+  "bestStudent": {
+    "value": "Олена К.",
+    "label": "Найкращий учень",
+    "student": {}
+  },
+  "classSuccess": {
+    "value": 87,
+    "label": "Успішність класу"
+  },
+  "activeStudents": {
+    "value": 155,
+    "label": "Активних учнів"
+  }
+}
+```
+
+`weeklyActivity` is for the line chart:
+
+```json
+{
+  "from": "...",
+  "to": "...",
+  "days": [
+    { "label": "Пн", "date": "2026-06-08", "homework": 2, "tests": 4 }
+  ],
+  "series": {
+    "homework": [2, 5, 3, 6, 8, 1, 0],
+    "tests": [4, 7, 5, 9, 12, 3, 1]
+  }
+}
+```
+
+`subjectAverages` is for horizontal bars. `averageGrade` is on the 1-12 scale:
+
+```json
+[
+  {
+    "id": "...",
+    "name": "Історія",
+    "icon": "book",
+    "averageGrade": 9.4,
+    "successPercent": 78
+  }
+]
+```
+
+`knowledgeRadar` is for radar charts:
+
+```json
+[
+  {
+    "subjectId": "...",
+    "subjectName": "Математика",
+    "icon": "calculator",
+    "value": 10.4,
+    "percent": 87
+  }
+]
+```
+
+`gradeDistribution` buckets grades into ranges:
+
+```json
+[
+  { "key": "1-4", "label": "1-4 балів", "count": 8, "percent": 5 },
+  { "key": "5-7", "label": "5-7 балів", "count": 24, "percent": 15 },
+  { "key": "8-10", "label": "8-10 балів", "count": 80, "percent": 52 },
+  { "key": "11-12", "label": "11-12 балів", "count": 43, "percent": 28 }
+]
+```
+
+Student analytics now returns old summary fields plus UI-ready gradebook blocks.
+
+Student response:
+
+```txt
+summary
+overview
+knowledgeRadar
+gradeDistribution
+subjects
+```
+
+`summary` still includes:
+
+```txt
+subjectsCount
+gradesCount
+averageGrade
+homeworkTotal
+homeworkCompleted
+attemptsCompleted
+averageTestScorePercent
+subjects[]
+schoolYear
+gradeScale
+```
+
+`overview` is for the main average grade card:
+
+```json
+{
+  "averageGrade": 10.5,
+  "subjectsCount": 5,
+  "gradeScale": "12-бальна шкала",
+  "schoolYear": "2025/2026 н.р."
+}
+```
+
+`subjects` includes per-subject grade chips and subject average:
+
+```json
+[
+  {
+    "id": "...",
+    "name": "Математика",
+    "icon": "calculator",
+    "averageGrade": 10.4,
+    "successPercent": 87,
+    "gradesCount": 5,
+    "grades": [
+      {
+        "id": "...",
+        "value": 10,
+        "type": "homework",
+        "workTitle": "Chapter 1 homework",
+        "date": "2026-06-20T18:00:00.000Z"
+      }
+    ]
+  }
+]
+```
+
+Subject analytics returns:
+
+```txt
+subject
+summary
+students[]
+homework[]
+tests[]
+```
+
 ## AI generation now uses background jobs
 
 Old synchronous AI endpoints were removed:

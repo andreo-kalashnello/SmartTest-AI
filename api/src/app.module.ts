@@ -8,12 +8,16 @@ import { AiModule } from './ai/ai.module';
 import { AttemptsModule } from './attempts/attempts.module';
 import { AuthModule } from './auth/auth.module';
 import { ClassesModule } from './classes/classes.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { GradesModule } from './grades/grades.module';
 import { HealthModule } from './health/health.module';
+import { HomeworkModule } from './homework/homework.module';
 import { MetricsInterceptor } from './metrics/metrics.interceptor';
 import { MetricsModule } from './metrics/metrics.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StudentModule } from './student/student.module';
+import { SubjectsModule } from './subjects/subjects.module';
 import { TestsModule } from './tests/tests.module';
 
 @Module({
@@ -59,6 +63,10 @@ import { TestsModule } from './tests/tests.module';
     PrismaModule,
     AuthModule,
     ClassesModule,
+    SubjectsModule,
+    HomeworkModule,
+    GradesModule,
+    AnalyticsModule,
     StudentModule,
     TestsModule,
     AttemptsModule,
