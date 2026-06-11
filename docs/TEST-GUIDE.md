@@ -66,9 +66,9 @@ npm run dev
 
 | Функціонал | Де видно | Примітка |
 |---|---|---|
-| Предмети вчителя | `/dashboard/subjects` | MOCK, немає API |
-| Домашні завдання (учитель/учень) | `/dashboard/homework`, `/student/homework` | MOCK |
-| Оцінки (журнал) | `/dashboard/grades`, `/student/grades` | MOCK |
+| Предмети вчителя | `/dashboard/subjects` | ✅ `GET/POST /subjects` підключено |
+| Домашні завдання (учитель/учень) | `/dashboard/homework`, `/student/homework` | ✅ `GET /homework` підключено на вчителя; student-екран ще може лишатись окремою задачею |
+| Оцінки (журнал) | `/dashboard/grades`, `/student/grades` | ✅ `GET/POST /grades` і `GET /subjects/:id/students` підключено |
 | Аналітика | `/dashboard/analytics` | MOCK |
 | Список учнів у дашборді | `/dashboard/students` | MOCK |
 | AI чат | Плаваюча кнопка на всіх сторінках | Demo UI, немає `POST /ai/chat` на бекенді |
@@ -147,98 +147,139 @@ npm run dev
 
 ---
 
-## 7. Перевірка через curl
+## 7. Ручні тести: Домашні завдання (Homework)
 
-### Реєстрація
+Коротко: перевірити створення, перегляд, додавання прикріплень і відправку учнем.
+
+UI (через сайт):
+
+1) Відкрийте `http://localhost:3000` в браузері і увійдіть як викладач: натисніть "Увійти"/"Login", введіть `teacher@example.com` / `password123`.
+
+2) Перейдіть у бічному меню в **Homework** (або `Dashboard → Homework`). Натисніть **New Homework** / **Create**, заповніть заголовок, опис та дедлайн, натисніть **Save**.
+
+3) Переконайтеся, що домашнє з'явилося у списку. Відкрийте картку завдання і перевірте деталі.
+
+4) Відкрийте інше вікно або режим інкогніто, зареєструйте/увійдіть як студент через `/register` → вкладка **Учень**, знайдіть завдання та натисніть **Submit**.
+
+5) У формі відправки введіть текст відповіді, прикріпіть файл через кнопку вибору файлу і підтвердіть **Submit**.
+
+6) Поверніться як викладач: у картці завдання відкрийте вкладку **Submissions**, переконайтесь, що з'явилась відправка; натисніть **Download** біля вкладення для перевірки файлу.
+
+7) Оцініть відправку через інтерфейс або перейдіть у **Grades** для додавання оцінки.
+
+Тепер — приклади через термінал (за потреби):
+
+1) Логін (teacher) — збережіть cookies:
+
 ```bash
-curl -s -c cookies.txt -X POST http://localhost:4000/api/auth/register \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"Вчитель","email":"teacher@test.com","password":"qwerty123","role":"TEACHER"}' | jq
+curl -sS -X POST http://localhost:4000/api/auth/login \
+	-H "Content-Type: application/json" \
+	-d '{"email":"teacher@example.com","password":"password123"}' \
+	-c /tmp/smarttest_cookies.txt
 ```
 
-### Вхід
+2) Створити домашнє завдання (teacher):
+
 ```bash
-curl -s -c cookies.txt -b cookies.txt -X POST http://localhost:4000/api/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"teacher@test.com","password":"qwerty123"}' | jq
+curl -sS -X POST http://localhost:4000/api/homework \
+	-H "Content-Type: application/json" \
+	-d '{"title":"HW 1","description":"Read chapter 1","dueDate":"2026-06-20"}' \
+	-b /tmp/smarttest_cookies.txt
 ```
 
-### Список тестів (з кукою)
+Очікування: відповідь з полем `id` нового домашнього завдання.
+
+3) Перевірити список домашніх (teacher):
+
 ```bash
-curl -s -b cookies.txt http://localhost:4000/api/tests | jq
+curl -sS http://localhost:4000/api/homework -b /tmp/smarttest_cookies.txt
 ```
 
-### Створення класу
+4) Відправка домашнього (student):
+ - Зареєструйте студента через UI або візьміть існуючий обліковий запис, залогіньтесь і збережіть cookies в `/tmp/student_cookies.txt`.
+ - Надіслати відповідь з/без файлу:
+
 ```bash
-curl -s -b cookies.txt -X POST http://localhost:4000/api/classes \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"10-А Алгебра","schoolName":"Ліцей №1"}' | jq
+curl -sS -X POST http://localhost:4000/api/homework/<HOMEWORK_ID>/submit \
+	-F "text=Моя відповідь" \
+	-F "file=@/path/to/file.pdf" \
+	-b /tmp/student_cookies.txt
 ```
 
-### Реєстрація учня
+Очікування: статус 200/201 і запис про відправку з `submissionId`.
+
+5) Перегляд відправок (teacher):
+
 ```bash
-curl -s -c student.txt -X POST http://localhost:4000/api/auth/register \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"Тест Учень","email":"student@test.com","password":"qwerty123","role":"STUDENT","grade":"10-А"}' | jq
+curl -sS http://localhost:4000/api/homework/<HOMEWORK_ID>/submissions -b /tmp/smarttest_cookies.txt
 ```
 
-### Учень приєднується до класу
+6) Завантажити вкладення відправки:
+
 ```bash
-curl -s -b student.txt -c student.txt -X POST http://localhost:4000/api/classes/join \
-  -H 'Content-Type: application/json' \
-  -d '{"inviteCode":"ABCD1234"}' | jq
+curl -sS -o submission.pdf \
+	http://localhost:4000/api/homework/<HOMEWORK_ID>/submissions/<SUBMISSION_ID>/attachment \
+	-b /tmp/smarttest_cookies.txt
 ```
 
-### Спроби учня
-```bash
-curl -s -b student.txt http://localhost:4000/api/student/attempts | jq
-```
+7) Оцінювання: створіть оцінку через Grades API (див. розділ 8).
 
 ---
 
-## 8. Відомі обмеження бекенду
+## 8. Ручні тести: Оцінки (Grades)
 
-| Проблема | Деталь | Вплив на UI |
-|---|---|---|
-| `GET /auth/me` не повертає `grade`/`schoolName` | JWT payload містить лише `id, email, name, role` | Після перезавантаження сторінки клас/школа учня зникають із сесії (до наступного логіну) |
-| Немає `PATCH /users/me` | Не можна оновити grade/schoolName через API | Поля "Клас" і "Школа" в `/student/settings` оновлюють лише Redux-стан (без збереження на сервері) |
-| Немає `POST /ai/chat` | AI-чат — демо-заглушка | Кнопка чату показує mock-відповіді |
+Коротко: перевірити створення/редагування/видалення оцінки та перегляд для учня.
 
----
+UI (через сайт):
 
-## 9. URL-карта додатку
+1) Увійдіть як викладач на `http://localhost:3000` → **Dashboard → Grades** або `/dashboard/grades`.
 
-| URL | Хто бачить | Backend |
-|---|---|---|
-| `/` | Всі | — лендінг |
-| `/login` | Всі | — |
-| `/register` | Всі | — |
-| `/join` | Всі | `POST /public/attempts/start` |
-| `/test/:pin` | Учасник спроби | `PUT /public/attempts/:id/answers` |
-| `/test/:pin/results` | Всі | `GET /public/attempts/:id` *(якщо є)* |
-| `/dashboard` | TEACHER | `GET /tests` |
-| `/dashboard/tests/new` | TEACHER | `POST /ai/jobs/*`, `POST /tests` |
-| `/dashboard/classes` | TEACHER | `GET/POST /classes`, `GET /classes/:id/members` |
-| `/dashboard/students` | TEACHER | MOCK |
-| `/dashboard/subjects` | TEACHER | MOCK |
-| `/dashboard/homework` | TEACHER | MOCK |
-| `/dashboard/grades` | TEACHER | MOCK |
-| `/dashboard/analytics` | TEACHER | MOCK |
-| `/student` | STUDENT | `GET /student/attempts` |
-| `/student/tests` | STUDENT | `GET /student/attempts` |
-| `/student/homework` | STUDENT | MOCK |
-| `/student/grades` | STUDENT | MOCK |
-| `/student/settings` | STUDENT | `POST /classes/join`, `GET /student/classes` |
+2) Натисніть **Add Grade** / **New Grade**, у формі виберіть студента, предмет, вкажіть значення (наприклад, 10), тип (homework/test), роботу та дату → Save.
+
+3) Перевірте, що оцінка відобразилася у списку та в профілі студента.
+
+4) Редагування: натисніть **Edit** поруч із оцінкою, змініть значення та збережіть.
+
+5) Видалення: натисніть **Delete** / іконку смітника, підтвердіть видалення і переконайтеся, що запис зник.
+
+6) Як студент: увійдіть під студентським обліковим записом → Student → Grades або `/student/grades` і перевірте, що оцінки відображаються.
+
+(Терминальні приклади залишено в документі для швидкої перевірки.)
 
 ---
 
-## 10. Що потрібно зробити на бекенді (якщо буде час)
+## 9. Ручні тести: Предмети, класи, AI, метрики, сесії
 
-1. **`GET /auth/me`** — додати `grade` і `schoolName` до відповіді (з БД, не лише з JWT).  
-   *Поточно: клас учня зникає після refresh сторінки.*
+UI (через сайт):
 
-2. **`PATCH /users/me`** — ендпоінт для оновлення `grade` і `schoolName`.  
-   *Поточно: студент не може зберегти клас на сервері.*
+1) Предмети (через веб):
 
-3. **`POST /ai/chat`** — чат-ендпоінт через OpenRouter.  
-   *Поточно: демо-відповіді на фронтенді.*
+ - Як викладач: Dashboard → Subjects → New Subject → введіть назву (наприклад, "Математика") → Save.
+ - Відкрийте картку предмету → натисніть «Enroll / Add student» → виберіть або додайте студента → підтвердіть.
+
+2) Класи (через веб):
+
+ - Як викладач: Dashboard → Classes → Create Class → введіть назву → Create → скопіюйте Invite code.
+ - Як студент: Student → Join Class або Student Settings → вставте Invite code → Join → перевірте, що клас з'явився.
+
+3) AI jobs (через веб):
+
+ - New Test → From Material → вставте текст або завантажте файл → натисніть Extract / Generate.
+ - Дочекайтеся завершення задачі через індикатор прогресу у UI → відредагуйте питання → Save.
+
+4) Метрики / Здоров'я (через браузер):
+
+ - Відкрийте в браузері `http://localhost:4000/api/health` щоб побачити JSON-статус.
+ - Якщо у фронтенді є сторінка Metrics / Analytics — відкрийте Dashboard → Metrics для перевірки графіків.
+
+5) Сесії / рефреш / вихід (через UI):
+
+ - Увійдіть у додаток, закрийте вкладку, відкрийте знову і перевірте, що сесія відновлюється (при дійсному refresh-token).
+ - Натисніть Logout у профілі — переконайтесь, що вас направило на сторінку входу.
+
+6) Примітки:
+ - Для UI-кроків використовуйте інтерфейс: значення ID, коди та інші параметри беруться з карток/форм у UI.
+ - Seed-обліковий запис: `teacher@example.com` / `password123`.
+ - Можу додати тестових студентів у `prisma/seed.ts`, якщо потрібно.
+
+

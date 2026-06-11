@@ -44,20 +44,12 @@ model User {
   aiJobs       AiJob[]
   teachingClasses Class[]       @relation("ClassTeacher")
   classMemberships ClassMember[]
-<<<<<<< HEAD
-  subjects         Subject[]         @relation("TeacherSubjects")
-  homework         Homework[]        @relation("TeacherHomework")
-  teacherGrades    GradeEntry[]      @relation("TeacherGrades")
-  studentGrades    GradeEntry[]      @relation("StudentGrades")
-  homeworkSubmissions HomeworkSubmission[]
-=======
   subjects     Subject[]        @relation("TeacherSubjects")
   subjectEnrollments Enrollment[] @relation("SubjectEnrollments")
   homework     Homework[]       @relation("TeacherHomework")
   homeworkSubmissions HomeworkSubmit[] @relation("HomeworkSubmissions")
   gradesGiven  Grade[]          @relation("TeacherGrades")
   gradesReceived Grade[]        @relation("StudentGrades")
->>>>>>> back-1
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -68,6 +60,7 @@ model Subject {
   teacher     User         @relation("TeacherSubjects", fields: [teacherId], references: [id], onDelete: Cascade)
   name        String
   icon        String?
+  classLinks  SubjectClass[]
   enrollments Enrollment[]
   homework    Homework[]
   grades      Grade[]
@@ -97,6 +90,8 @@ model Homework {
   teacher     User             @relation("TeacherHomework", fields: [teacherId], references: [id], onDelete: Cascade)
   subjectId   String
   subject     Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  classId     String?
+  class       Class?           @relation(fields: [classId], references: [id], onDelete: SetNull)
   title       String
   description String?
   dueAt       DateTime?
@@ -224,23 +219,6 @@ model Session {
   @@index([revokedAt])
 }
 
-model Subject {
-  id        String   @id @default(cuid())
-  name      String
-  icon      String   @default("math")
-  color     String   @default("from-violet-500 to-purple-600")
-  teacherId String
-  teacher   User     @relation("TeacherSubjects", fields: [teacherId], references: [id], onDelete: Cascade)
-  tests     Test[]
-  homework  Homework[]
-  grades    GradeEntry[]
-  classLinks SubjectClass[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([teacherId])
-}
-
 model SubjectClass {
   id        String  @id @default(cuid())
   subjectId String
@@ -250,60 +228,6 @@ model SubjectClass {
 
   @@unique([subjectId, classId])
   @@index([classId])
-}
-
-model Homework {
-  id          String   @id @default(cuid())
-  title       String
-  description String   @default("")
-  dueDate     DateTime
-  teacherId   String
-  teacher     User     @relation("TeacherHomework", fields: [teacherId], references: [id], onDelete: Cascade)
-  subjectId   String
-  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  classId     String
-  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  submissions HomeworkSubmission[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([teacherId])
-  @@index([subjectId])
-  @@index([classId])
-}
-
-model HomeworkSubmission {
-  id          String   @id @default(cuid())
-  homeworkId  String
-  homework    Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
-  studentId   String
-  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  submittedAt DateTime @default(now())
-
-  @@unique([homeworkId, studentId])
-  @@index([studentId])
-}
-
-model GradeEntry {
-  id        String    @id @default(cuid())
-  teacherId String
-  teacher   User      @relation("TeacherGrades", fields: [teacherId], references: [id], onDelete: Cascade)
-  studentId String
-  student   User      @relation("StudentGrades", fields: [studentId], references: [id], onDelete: Cascade)
-  subjectId String
-  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  grade     Int
-  type      GradeType
-  work      String
-  gradedAt  DateTime  @default(now())
-  attemptId String?   @unique
-  attempt   TestAttempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@index([teacherId])
-  @@index([studentId])
-  @@index([subjectId])
 }
 
 model Test {
@@ -322,7 +246,6 @@ model Test {
   @@index([teacherId])
   @@index([subjectId])
   @@index([pin])
-  @@index([subjectId])
 }
 
 model Question {
@@ -364,7 +287,6 @@ model TestAttempt {
   score       Int           @default(0)
   total       Int           @default(0)
   answers     Answer[]
-  gradeEntry  GradeEntry?
   startedAt   DateTime      @default(now())
   completedAt DateTime?
   createdAt   DateTime      @default(now())

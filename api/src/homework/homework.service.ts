@@ -236,6 +236,12 @@ export class HomeworkService {
 
     async submissions(user: CurrentUserPayload, id: string) {
         await this.ensureTeacherOwnsHomework(user.id, id);
+        const homework = await this.prisma.homework.findUnique({
+            where: { id },
+            select: { id: true, title: true, subjectId: true },
+        });
+        if (!homework) throw new NotFoundException({ message: 'Homework not found' });
+
         const submissions = await this.prisma.homeworkSubmit.findMany({
             where: { homeworkId: id },
             orderBy: { submittedAt: 'desc' },
@@ -251,7 +257,14 @@ export class HomeworkService {
                 },
             },
         });
-        return { submissions: submissions.map(serializeHomeworkSubmission) };
+
+        const serialized = submissions.map((s) => ({
+            ...serializeHomeworkSubmission(s),
+            subjectId: homework.subjectId,
+            homeworkTitle: homework.title,
+        }));
+
+        return { submissions: serialized };
     }
 
     async downloadSubmissionAttachment(

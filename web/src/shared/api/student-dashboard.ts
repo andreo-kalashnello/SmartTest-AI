@@ -57,8 +57,10 @@ export async function fetchStudentDashboard(): Promise<StudentDashboard> {
   ]);
 
   const attempts = attemptsBody.attempts;
+  // Some seeded attempts may have status === 'COMPLETED' but missing completedAt.
+  // Treat either status === 'COMPLETED' or a truthy completedAt as completed.
   const completedAttempts = attempts.filter(
-    (a) => a.status === "COMPLETED" && a.completedAt,
+    (a) => a.status === "COMPLETED" || Boolean(a.completedAt),
   );
   const classes = classesBody.classes;
 

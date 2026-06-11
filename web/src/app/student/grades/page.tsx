@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { AlertCircle, FlaskConical } from "lucide-react";
 import {
   RadarChart,
@@ -13,6 +14,7 @@ import {
 } from "recharts";
 
 import { useStudentDashboard } from "@/shared/lib/hooks/use-student-dashboard";
+import { fetchMyGrades, type TeacherGradeItem } from "@/shared/api/grades";
 import { fadeIn, stagger } from "@/shared/ui/motion";
 
 function GradeCell({ g }: { g: number }) {
@@ -33,6 +35,28 @@ export default function StudentGradesPage() {
 
   const overall = data?.stats.avgGrade12 ?? 0;
   const testCount = data?.gradeByTest.length ?? 0;
+  const [myGrades, setMyGrades] = useState<TeacherGradeItem[] | null>(null);
+  const [myGradesLoading, setMyGradesLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    setMyGradesLoading(true);
+    void fetchMyGrades()
+      .then((res) => {
+        if (!mounted) return;
+        setMyGrades(res.grades);
+      })
+      .catch((e) => {
+        console.warn('Failed to load my grades', e);
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setMyGradesLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -47,6 +71,27 @@ export default function StudentGradesPage() {
         <p className="text-sm text-red-600 flex items-center gap-1">
           <AlertCircle className="size-4" /> {error}
         </p>
+      )}
+
+      {/* Teacher-assigned grades (from /grades/my) */}
+      {!myGradesLoading && myGrades && myGrades.length > 0 && (
+        <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100">
+          <h3 className="font-bold text-gray-900 mb-3">Оцінки від вчителя</h3>
+          <div className="grid gap-3">
+            {myGrades.map((g) => (
+              <div key={g.id} className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <div className="text-sm text-gray-500">{g.subject.name}</div>
+                  <div className="font-semibold">{g.workTitle}</div>
+                  <div className="text-xs text-gray-500">{new Date(g.date).toLocaleString()}</div>
+                </div>
+                <div className="text-right">
+                  <span className="inline-flex size-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 text-lg font-bold px-3 py-1">{g.value}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {loading && <p className="text-sm text-gray-400">Завантаження...</p>}
@@ -149,3 +194,5 @@ export default function StudentGradesPage() {
     </div>
   );
 }
+
+// (my-grades effect lives inside component)
