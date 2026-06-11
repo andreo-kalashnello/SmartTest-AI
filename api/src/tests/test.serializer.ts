@@ -18,6 +18,7 @@ export function serializeTeacherTest(test: TestWithQuestions) {
     id: test.id,
     title: test.title,
     pin: test.pin,
+    subjectId: test.subjectId,
     questions: test.questions.map((question) => ({
       id: question.id,
       prompt: question.prompt,
@@ -37,6 +38,7 @@ export function serializePlayerTest(test: TestWithQuestions) {
     id: test.id,
     title: test.title,
     pin: test.pin,
+    subjectId: test.subjectId,
     questions: test.questions.map((question) => ({
       id: question.id,
       prompt: question.prompt,

@@ -21,6 +21,7 @@ export const questionInputSchema = z
 
 export const testInputSchema = z.object({
   title: z.string().trim().min(1).max(200),
+  subjectId: z.string().trim().min(1).optional(),
   questions: z.array(questionInputSchema).default([]),
 });
 
