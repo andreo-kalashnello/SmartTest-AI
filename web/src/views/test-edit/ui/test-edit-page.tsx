@@ -22,13 +22,14 @@ export function TestEditPage() {
   const { status, testId } = useAppSelector((s) => s.teacherTestDraft);
 
   useEffect(() => {
+    if (!params) return;
     const id = params.id;
     if (!id) return;
     void dispatch(loadTestDraft(id));
     return () => {
       dispatch(resetDraft());
     };
-  }, [params.id, dispatch]);
+  }, [params, params?.id, dispatch]);
 
   const handleSave = () => {
     void dispatch(saveTestDraft());
@@ -55,9 +56,9 @@ export function TestEditPage() {
         >
           Зберегти
         </LoadingButton>
-        {params.id && (
+        {params?.id && (
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/dashboard/tests/${params.id}/attempts`}>
+            <Link href={`/dashboard/tests/${params?.id}/attempts`}>
               Спроби учнів
             </Link>
           </Button>

@@ -64,7 +64,7 @@ export function TeacherSidebar() {
         {NAV.map((item) => {
           const active = item.href === "/dashboard"
             ? pathname === "/dashboard"
-            : pathname.startsWith(item.href);
+            : pathname ? pathname.startsWith(item.href) : false;
           return (
             <Link
               key={item.href}

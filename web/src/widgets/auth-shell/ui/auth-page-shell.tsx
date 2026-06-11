@@ -23,11 +23,11 @@ export function AuthPageShell({ mode, children }: AuthPageShellProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [role, setRole] = useState<UserRole>(() =>
-    parseRole(searchParams.get("role")),
+    parseRole(searchParams?.get("role") ?? null),
   );
 
   useEffect(() => {
-    setRole(parseRole(searchParams.get("role")));
+    setRole(parseRole(searchParams?.get("role") ?? null));
   }, [searchParams]);
 
   const onRoleChange = useCallback(

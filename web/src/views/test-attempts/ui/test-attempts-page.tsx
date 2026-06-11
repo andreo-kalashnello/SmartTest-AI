@@ -16,6 +16,7 @@ export function TestAttemptsPage() {
   const [attempts, setAttempts] = useState<TestAttempt[]>([]);
 
   useEffect(() => {
+    if (!params) return;
     const id = params.id;
     if (!id) return;
 
@@ -41,7 +42,7 @@ export function TestAttemptsPage() {
     return () => {
       alive = false;
     };
-  }, [params.id]);
+  }, [params, params?.id]);
 
   if (!test) {
     return <p className="text-gray-500">Тест не знайдено</p>;

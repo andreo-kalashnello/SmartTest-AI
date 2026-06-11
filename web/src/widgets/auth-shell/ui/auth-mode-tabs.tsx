@@ -21,7 +21,7 @@ type AuthModeTabsProps = {
 
 export function AuthModeTabs({ role, className }: AuthModeTabsProps) {
   const pathname = usePathname();
-  const active: AuthMode = pathname.startsWith("/register") ? "register" : "login";
+  const active: AuthMode = pathname ? pathname.startsWith("/register") ? "register" : "login" : "login";
 
   return (
     <div

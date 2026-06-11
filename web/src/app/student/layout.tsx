@@ -89,7 +89,7 @@ function StudentSidebarContent({ onClose }: { onClose?: () => void }) {
           const active =
             item.href === "/student"
               ? pathname === "/student"
-              : pathname.startsWith(item.href);
+              : pathname ? pathname.startsWith(item.href) : false;
           return (
             <Link
               key={item.href}
