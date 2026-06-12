@@ -1,1 +1,1 @@
-export { default } from '@/app/join/page';
+export { default } from '../../src/app/join/page';

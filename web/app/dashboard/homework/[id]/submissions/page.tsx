@@ -1,1 +1,1 @@
-export { default } from '@/app/dashboard/homework/[id]/submissions/page';
+export { default } from '../../../../../src/app/dashboard/homework/[id]/submissions/page';

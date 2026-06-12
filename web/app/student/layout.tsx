@@ -1,1 +1,1 @@
-export { default } from '@/app/student/layout';
+export { default } from '../../src/app/student/layout';
