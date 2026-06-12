@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Search, School, AlertCircle } from "lucide-react";
