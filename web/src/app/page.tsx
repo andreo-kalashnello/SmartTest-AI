@@ -1,5 +1,6 @@
 import { HomePage } from "@/views/home";
-import LandingRedirect from "@/components/landing-redirect";
+
+export const dynamic = "force-dynamic";
 
 export default function Page() {
   return (
