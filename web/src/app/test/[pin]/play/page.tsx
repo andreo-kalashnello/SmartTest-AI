@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { TestPlayPage } from "@/views/test-play";
 
 export default async function Page({

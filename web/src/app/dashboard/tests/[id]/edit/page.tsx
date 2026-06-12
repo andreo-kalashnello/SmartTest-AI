@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { TestEditPage } from "@/views/test-edit";
 
 export default function Page() {

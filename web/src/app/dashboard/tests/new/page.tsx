@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { TestNewPage } from "@/views/test-new";
 
 export default function Page() {

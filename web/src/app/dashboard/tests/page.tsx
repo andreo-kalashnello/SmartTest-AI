@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { TeacherTestList } from "@/widgets/teacher-test-list";
 import { Suspense } from "react";
 import Link from "next/link";
